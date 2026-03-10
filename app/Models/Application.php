@@ -12,6 +12,7 @@ class Application extends Model
         'position',
         'city',
         'location',
+        'stage',
         'status',
         'applied_at',
         'job_url',

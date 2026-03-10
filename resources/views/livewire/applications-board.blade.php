@@ -1,23 +1,35 @@
 <div class="p-8">
     @php
         $columns = [
-            'applied' => ['label' => 'Aplicadas', 'items' => $applied],
-            'waiting' => ['label' => 'Aguardando', 'items' => $waiting],
-            'interview' => ['label' => 'Entrevista', 'items' => $interview],
-            'rejected' => ['label' => 'Rejeitadas', 'items' => $rejected],
-            'offer' => ['label' => 'Oferta', 'items' => $offer],
+            'applied' => ['label' => 'Applied', 'items' => $applied],
+            'waiting' => ['label' => 'Waiting', 'items' => $waiting],
+            'interview' => ['label' => 'Interview', 'items' => $interview],
+            'rejected' => ['label' => 'Rejected', 'items' => $rejected],
+            'offer' => ['label' => 'Offer', 'items' => $offer],
         ];
     @endphp
 
-    <h1 class="text-3xl font-bold mb-8">
-        Job Application Tracker
-    </h1>
+    @if (session('status'))
+        <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 2200)" x-show="show" class="fixed right-6 top-6 z-50 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-xl">
+            {{ session('status') }}
+        </div>
+    @endif
+
+    <div class="mb-8 flex items-center justify-between gap-4">
+        <h1 class="text-3xl font-bold">
+            Job Application Tracker
+        </h1>
+
+        <button type="button" wire:click="openCreateForm" class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
+            + New application
+        </button>
+    </div>
 
     <div class="grid grid-cols-3 gap-6 mb-8">
 
         <div class="bg-white shadow p-4 rounded">
 
-            Total de candidaturas
+            Total applications
 
             <div class="text-2xl font-bold">
                 {{ $total }}
@@ -27,7 +39,7 @@
 
         <div class="bg-white shadow p-4 rounded">
 
-            Entrevistas
+            Interviews
 
             <div class="text-2xl font-bold">
                 {{ $interviews }}
@@ -37,7 +49,7 @@
 
         <div class="bg-white shadow p-4 rounded">
 
-            Ofertas
+            Offers
 
             <div class="text-2xl font-bold">
                 {{ $offers }}
@@ -47,42 +59,47 @@
 
     </div>
 
+    @if ($isFormOpen)
     <form wire:submit.prevent="saveApplication" class="bg-white shadow rounded p-4 mb-8 space-y-4">
         <div class="flex items-center justify-between gap-4">
             <div>
                 <h2 class="text-lg font-semibold text-gray-900">
-                    {{ $editingApplicationId ? 'Editar candidatura' : 'Nova candidatura' }}
+                    {{ $editingApplicationId ? 'Edit application' : 'New application' }}
                 </h2>
                 <p class="text-sm text-gray-500">
-                    Preencha os dados que aparecem no card do quadro.
+                    Fill in the details shown in the board card.
                 </p>
             </div>
 
             @if ($editingApplicationId)
                 <button type="button" wire:click="cancelEditing" class="text-sm font-medium text-gray-600 hover:text-gray-900">
-                    Cancelar
+                    Cancel
+                </button>
+            @else
+                <button type="button" wire:click="cancelEditing" class="text-sm font-medium text-gray-600 hover:text-gray-900">
+                    Close
                 </button>
             @endif
         </div>
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <div>
-                <input type="text" placeholder="Nome da empresa" wire:model.live="company" class="w-full border rounded px-3 py-2" />
+                <input type="text" placeholder="Company name" wire:model.live="company" class="w-full border rounded px-3 py-2" />
                 @error('company') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
-                <input type="text" placeholder="Cargo" wire:model.live="position" class="w-full border rounded px-3 py-2" />
+                <input type="text" placeholder="Position" wire:model.live="position" class="w-full border rounded px-3 py-2" />
                 @error('position') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
-                <input type="text" placeholder="Cidade da vaga" wire:model.live="city" class="w-full border rounded px-3 py-2" />
+                <input type="text" placeholder="City" wire:model.live="city" class="w-full border rounded px-3 py-2" />
                 @error('city') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
-                <input type="text" placeholder="Localização" wire:model.live="location" class="w-full border rounded px-3 py-2" />
+                <input type="text" placeholder="Location" wire:model.live="location" class="w-full border rounded px-3 py-2" />
                 @error('location') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
@@ -92,15 +109,23 @@
             </div>
 
             <div>
-                <input type="url" placeholder="URL da vaga (opcional)" wire:model.live="job_url" class="w-full border rounded px-3 py-2" />
+                <input type="url" placeholder="Job URL (optional)" wire:model.live="job_url" class="w-full border rounded px-3 py-2" />
                 @error('job_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
         </div>
 
+        @if ($editingApplicationId)
+            <div>
+                <textarea placeholder="Notes" wire:model.live="notes" rows="4" class="w-full border rounded px-3 py-2"></textarea>
+                @error('notes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        @endif
+
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold">
-            {{ $editingApplicationId ? 'Salvar alterações' : 'Adicionar candidatura' }}
+            {{ $editingApplicationId ? 'Save changes' : 'Add application' }}
         </button>
     </form>
+    @endif
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
         @foreach ($columns as $status => $column)
@@ -126,16 +151,16 @@
                         </div>
 
                         <details class="card-actions relative">
-                            <summary class="cursor-pointer list-none rounded-lg px-2 py-1 text-lg leading-none text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-                                ...
+                            <summary class="cursor-pointer list-none rounded-xl border border-gray-200 px-2.5 py-1 text-lg leading-none text-gray-500 transition hover:bg-gray-100 hover:text-gray-700">
+                                ⋯
                             </summary>
 
                             <div class="absolute right-0 z-10 mt-2 w-36 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
                                 <button type="button" wire:click="editApplication({{ $app->id }})" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
-                                    Editar
+                                    Edit
                                 </button>
                                 <button type="button" wire:click="deleteApplication({{ $app->id }})" wire:confirm="Delete this application?" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">
-                                    Excluir
+                                    Delete
                                 </button>
                             </div>
                         </details>
@@ -143,24 +168,30 @@
 
                     <div class="space-y-2 text-sm text-gray-700">
                         <div>
-                            <span class="font-medium">🏢 Nome da empresa:</span>
+                            <span class="font-medium">🏢 Company name:</span>
                             {{ $app->company }}
                         </div>
                         <div>
-                            <span class="font-medium">📍 Cidade da vaga:</span>
-                            {{ $app->city ?: 'Não informado' }}
+                            <span class="font-medium">📍 City:</span>
+                            {{ $app->city ?: 'Not informed' }}
                         </div>
                         <div>
-                            <span class="font-medium">🗺️ Localização:</span>
-                            {{ $app->location ?: 'Não informado' }}
+                            <span class="font-medium">🗺️ Location:</span>
+                            {{ $app->location ?: 'Not informed' }}
                         </div>
+                        @if ($app->notes)
+                        <div>
+                            <span class="font-medium">📝 Notes:</span>
+                            {{ $app->notes }}
+                        </div>
+                        @endif
                     </div>
                 </article>
                 @endforeach
 
                 @if ($column['items']->isEmpty())
                 <div class="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-4 py-6 text-center text-sm text-gray-400">
-                    Nenhuma candidatura nesta coluna.
+                    No applications in this column yet.
                 </div>
                 @endif
             </div>
