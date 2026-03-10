@@ -19,6 +19,7 @@ class ApplicationsBoard extends Component
     ];
 
     public $isCreateFormOpen = false;
+    public $showFavoritesOnly = false;
 
     public $company;
     public $position;
@@ -60,6 +61,11 @@ class ApplicationsBoard extends Component
         return Schema::hasColumn('applications', 'personal_score');
     }
 
+    protected function hasFavoriteColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'is_favorite');
+    }
+
     public function saveApplication()
     {
         $hasCityColumn = $this->hasCityColumn();
@@ -93,6 +99,10 @@ class ApplicationsBoard extends Component
 
         if ($hasPersonalScoreColumn) {
             $createData['personal_score'] = $data['personal_score'] ?? null;
+        }
+
+        if ($this->hasFavoriteColumn()) {
+            $createData['is_favorite'] = false;
         }
 
         Application::create([
@@ -212,6 +222,32 @@ class ApplicationsBoard extends Component
         $this->resetEditForm();
     }
 
+    public function toggleFavorite($id)
+    {
+        if (!$this->hasFavoriteColumn()) {
+            return;
+        }
+
+        $application = Application::where('user_id', Auth::id())->find($id);
+
+        if (!$application) {
+            return;
+        }
+
+        $application->is_favorite = !$application->is_favorite;
+        $application->save();
+    }
+
+    public function toggleFavoritesFilter()
+    {
+        $this->showFavoritesOnly = !$this->showFavoritesOnly;
+    }
+
+    public function clearFavoritesFilter()
+    {
+        $this->showFavoritesOnly = false;
+    }
+
     protected function resetCreateForm()
     {
         $this->reset([
@@ -249,10 +285,19 @@ class ApplicationsBoard extends Component
     public function render()
     {
         $hasStageColumn = $this->hasStageColumn();
+        $hasFavoriteColumn = $this->hasFavoriteColumn();
 
         $apps = Application::where('user_id', Auth::id())
             ->latest('updated_at')
             ->get();
+
+        $favoritesCount = $hasFavoriteColumn
+            ? $apps->where('is_favorite', true)->count()
+            : 0;
+
+        if ($this->showFavoritesOnly && $hasFavoriteColumn) {
+            $apps = $apps->where('is_favorite', true);
+        }
 
         if ($hasStageColumn) {
             $apps->each(function (Application $application) {
@@ -293,6 +338,12 @@ class ApplicationsBoard extends Component
             'interviews' => $interviews,
 
             'offers' => $offers,
+
+            'favorites' => $favoritesCount,
+
+            'showFavoritesOnly' => $this->showFavoritesOnly,
+
+            'hasFavoriteColumn' => $hasFavoriteColumn,
 
         ]);
     }

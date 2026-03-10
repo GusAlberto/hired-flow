@@ -13,6 +13,7 @@ class Application extends Model
         'city',
         'location',
         'stage',
+        'is_favorite',
         'status',
         'applied_at',
         'job_url',
@@ -22,6 +23,7 @@ class Application extends Model
 
     protected $casts = [
         'applied_at' => 'date',
+        'is_favorite' => 'boolean',
         'personal_score' => 'integer',
     ];
 }
