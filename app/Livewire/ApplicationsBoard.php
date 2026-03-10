@@ -18,64 +18,88 @@ class ApplicationsBoard extends Component
         'oferta' => 'offer',
     ];
 
-    public $editingApplicationId = null;
-    public $isFormOpen = false;
+    public $isCreateFormOpen = false;
     public $company;
     public $position;
     public $city;
     public $location;
     public $applied_at;
     public $job_url;
-    public $notes;
+
+    public $editingApplicationId = null;
+    public $isEditModalOpen = false;
+    public $editCompany;
+    public $editPosition;
+    public $editCity;
+    public $editLocation;
+    public $editAppliedAt;
+    public $editJobUrl;
+    public $editNotes;
 
     protected function hasStageColumn(): bool
     {
         return Schema::hasColumn('applications', 'stage');
     }
 
+    protected function hasCityColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'city');
+    }
+
+    protected function hasLocationColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'location');
+    }
+
     public function saveApplication()
     {
+        $hasCityColumn = $this->hasCityColumn();
+        $hasLocationColumn = $this->hasLocationColumn();
+
         $data = $this->validate([
             'company' => ['required', 'string', 'max:255'],
             'position' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:255'],
-            'location' => ['required', 'string', 'max:255'],
+            'city' => [$hasCityColumn ? 'required' : 'nullable', 'string', 'max:255'],
+            'location' => [$hasLocationColumn ? 'required' : 'nullable', 'string', 'max:255'],
             'applied_at' => ['required', 'date'],
             'job_url' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
         ]);
 
-        if ($this->editingApplicationId) {
-            $application = Application::where('user_id', Auth::id())
-                ->find($this->editingApplicationId);
+        $createData = [
+            'company' => $data['company'],
+            'position' => $data['position'],
+            'applied_at' => $data['applied_at'],
+            'job_url' => $data['job_url'] ?? null,
+        ];
 
-            if (!$application) {
-                return;
-            }
+        if ($hasCityColumn) {
+            $createData['city'] = $data['city'] ?? null;
+        }
 
-            $application->update($data);
-
-            session()->flash('status', 'Application updated successfully.');
-            $this->resetForm();
-
-            return;
+        if ($hasLocationColumn) {
+            $createData['location'] = $data['location'] ?? null;
         }
 
         Application::create([
-            ...collect($data)->except('notes')->all(),
+            ...$createData,
             'user_id' => Auth::id(),
             ...($this->hasStageColumn() ? ['stage' => 'applied'] : []),
             'status' => 'applied',
         ]);
 
         session()->flash('status', 'Application created successfully.');
-        $this->resetForm();
+        $this->resetCreateForm();
     }
 
     public function openCreateForm()
     {
-        $this->resetForm();
-        $this->isFormOpen = true;
+        $this->resetCreateForm();
+        $this->isCreateFormOpen = true;
+    }
+
+    public function closeCreateForm()
+    {
+        $this->resetCreateForm();
     }
 
     public function editApplication($id)
@@ -87,14 +111,62 @@ class ApplicationsBoard extends Component
         }
 
         $this->editingApplicationId = $application->id;
-        $this->isFormOpen = true;
-        $this->company = $application->company;
-        $this->position = $application->position;
-        $this->city = $application->city;
-        $this->location = $application->location;
-        $this->applied_at = optional($application->applied_at)->format('Y-m-d');
-        $this->job_url = $application->job_url;
-        $this->notes = $application->notes;
+        $this->isEditModalOpen = true;
+        $this->editCompany = $application->company;
+        $this->editPosition = $application->position;
+        $this->editCity = $application->city;
+        $this->editLocation = $application->location;
+        $this->editAppliedAt = optional($application->applied_at)->format('Y-m-d');
+        $this->editJobUrl = $application->job_url;
+        $this->editNotes = $application->notes;
+    }
+
+    public function updateApplication()
+    {
+        if (!$this->editingApplicationId) {
+            return;
+        }
+
+        $hasCityColumn = $this->hasCityColumn();
+        $hasLocationColumn = $this->hasLocationColumn();
+
+        $application = Application::where('user_id', Auth::id())
+            ->find($this->editingApplicationId);
+
+        if (!$application) {
+            return;
+        }
+
+        $data = $this->validate([
+            'editCompany' => ['required', 'string', 'max:255'],
+            'editPosition' => ['required', 'string', 'max:255'],
+            'editCity' => [$hasCityColumn ? 'required' : 'nullable', 'string', 'max:255'],
+            'editLocation' => [$hasLocationColumn ? 'required' : 'nullable', 'string', 'max:255'],
+            'editAppliedAt' => ['required', 'date'],
+            'editJobUrl' => ['nullable', 'string', 'max:255'],
+            'editNotes' => ['nullable', 'string'],
+        ]);
+
+        $updateData = [
+            'company' => $data['editCompany'],
+            'position' => $data['editPosition'],
+            'applied_at' => $data['editAppliedAt'],
+            'job_url' => $data['editJobUrl'],
+            'notes' => $data['editNotes'],
+        ];
+
+        if ($hasCityColumn) {
+            $updateData['city'] = $data['editCity'] ?? null;
+        }
+
+        if ($hasLocationColumn) {
+            $updateData['location'] = $data['editLocation'] ?? null;
+        }
+
+        $application->update($updateData);
+
+        session()->flash('status', 'Application updated successfully.');
+        $this->closeEditModal();
     }
 
     public function deleteApplication($id)
@@ -109,27 +181,42 @@ class ApplicationsBoard extends Component
         session()->flash('status', 'Application deleted successfully.');
 
         if ($this->editingApplicationId === (int) $id) {
-            $this->resetForm();
+            $this->closeEditModal();
         }
     }
 
-    public function cancelEditing()
+    public function closeEditModal()
     {
-        $this->resetForm();
+        $this->resetEditForm();
     }
 
-    protected function resetForm()
+    protected function resetCreateForm()
     {
         $this->reset([
-            'editingApplicationId',
-            'isFormOpen',
+            'isCreateFormOpen',
             'company',
             'position',
             'city',
             'location',
             'applied_at',
             'job_url',
-            'notes',
+        ]);
+
+        $this->resetValidation();
+    }
+
+    protected function resetEditForm()
+    {
+        $this->reset([
+            'editingApplicationId',
+            'isEditModalOpen',
+            'editCompany',
+            'editPosition',
+            'editCity',
+            'editLocation',
+            'editAppliedAt',
+            'editJobUrl',
+            'editNotes',
         ]);
 
         $this->resetValidation();

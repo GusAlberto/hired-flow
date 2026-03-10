@@ -59,27 +59,21 @@
 
     </div>
 
-    @if ($isFormOpen)
+    @if ($isCreateFormOpen)
     <form wire:submit.prevent="saveApplication" class="bg-white shadow rounded p-4 mb-8 space-y-4">
         <div class="flex items-center justify-between gap-4">
             <div>
                 <h2 class="text-lg font-semibold text-gray-900">
-                    {{ $editingApplicationId ? 'Edit application' : 'New application' }}
+                    New application
                 </h2>
                 <p class="text-sm text-gray-500">
                     Fill in the details shown in the board card.
                 </p>
             </div>
 
-            @if ($editingApplicationId)
-                <button type="button" wire:click="cancelEditing" class="text-sm font-medium text-gray-600 hover:text-gray-900">
-                    Cancel
-                </button>
-            @else
-                <button type="button" wire:click="cancelEditing" class="text-sm font-medium text-gray-600 hover:text-gray-900">
-                    Close
-                </button>
-            @endif
+            <button type="button" wire:click="closeCreateForm" class="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Close
+            </button>
         </div>
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -114,15 +108,8 @@
             </div>
         </div>
 
-        @if ($editingApplicationId)
-            <div>
-                <textarea placeholder="Notes" wire:model.live="notes" rows="4" class="w-full border rounded px-3 py-2"></textarea>
-                @error('notes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-            </div>
-        @endif
-
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold">
-            {{ $editingApplicationId ? 'Save changes' : 'Add application' }}
+            Add application
         </button>
     </form>
     @endif
@@ -198,6 +185,67 @@
         </div>
         @endforeach
     </div>
+
+    @if ($isEditModalOpen)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" wire:key="edit-modal">
+        <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
+            <div class="mb-4 flex items-center justify-between gap-4">
+                <h2 class="text-xl font-semibold text-gray-900">Edit application</h2>
+                <button type="button" wire:click="closeEditModal" class="rounded-lg px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                    Close
+                </button>
+            </div>
+
+            <form wire:submit.prevent="updateApplication" class="space-y-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                        <input type="text" placeholder="Company name" wire:model.live="editCompany" class="w-full border rounded px-3 py-2" />
+                        @error('editCompany') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <input type="text" placeholder="Position" wire:model.live="editPosition" class="w-full border rounded px-3 py-2" />
+                        @error('editPosition') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <input type="text" placeholder="City" wire:model.live="editCity" class="w-full border rounded px-3 py-2" />
+                        @error('editCity') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <input type="text" placeholder="Location" wire:model.live="editLocation" class="w-full border rounded px-3 py-2" />
+                        @error('editLocation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <input type="date" wire:model.live="editAppliedAt" class="w-full border rounded px-3 py-2" />
+                        @error('editAppliedAt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <input type="url" placeholder="Job URL (optional)" wire:model.live="editJobUrl" class="w-full border rounded px-3 py-2" />
+                        @error('editJobUrl') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div>
+                    <textarea placeholder="Notes" wire:model.live="editNotes" rows="4" class="w-full border rounded px-3 py-2"></textarea>
+                    @error('editNotes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" wire:click="closeEditModal" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                        Save changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
 
 </div>
 
