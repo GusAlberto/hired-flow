@@ -134,7 +134,7 @@
                 <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}">
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
-                            <div class="text-sm font-semibold text-blue-700">
+                            <div class="text-sm font-semibold text-blue-700 uppercase">
                                 {{ $app->position }}
                             </div>
                             <div class="text-xs text-gray-400">
