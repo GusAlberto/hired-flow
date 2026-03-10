@@ -16,10 +16,12 @@ class Application extends Model
         'status',
         'applied_at',
         'job_url',
-        'notes'
+        'notes',
+        'personal_score',
     ];
 
     protected $casts = [
         'applied_at' => 'date',
+        'personal_score' => 'integer',
     ];
 }

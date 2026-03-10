@@ -2,11 +2,11 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Livewire\Attributes\On;
 use App\Models\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Attributes\On;
+use Livewire\Component;
 
 class ApplicationsBoard extends Component
 {
@@ -19,21 +19,25 @@ class ApplicationsBoard extends Component
     ];
 
     public $isCreateFormOpen = false;
+
     public $company;
     public $position;
     public $city;
     public $location;
     public $applied_at;
     public $job_url;
+    public $personal_score;
 
     public $editingApplicationId = null;
     public $isEditModalOpen = false;
+
     public $editCompany;
     public $editPosition;
     public $editCity;
     public $editLocation;
     public $editAppliedAt;
     public $editJobUrl;
+    public $editPersonalScore;
     public $editNotes;
 
     protected function hasStageColumn(): bool
@@ -51,10 +55,16 @@ class ApplicationsBoard extends Component
         return Schema::hasColumn('applications', 'location');
     }
 
+    protected function hasPersonalScoreColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'personal_score');
+    }
+
     public function saveApplication()
     {
         $hasCityColumn = $this->hasCityColumn();
         $hasLocationColumn = $this->hasLocationColumn();
+        $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
 
         $data = $this->validate([
             'company' => ['required', 'string', 'max:255'],
@@ -63,6 +73,7 @@ class ApplicationsBoard extends Component
             'location' => [$hasLocationColumn ? 'required' : 'nullable', 'string', 'max:255'],
             'applied_at' => ['required', 'date'],
             'job_url' => ['nullable', 'string', 'max:255'],
+            'personal_score' => ['nullable', 'integer', 'between:0,10'],
         ]);
 
         $createData = [
@@ -78,6 +89,10 @@ class ApplicationsBoard extends Component
 
         if ($hasLocationColumn) {
             $createData['location'] = $data['location'] ?? null;
+        }
+
+        if ($hasPersonalScoreColumn) {
+            $createData['personal_score'] = $data['personal_score'] ?? null;
         }
 
         Application::create([
@@ -118,6 +133,7 @@ class ApplicationsBoard extends Component
         $this->editLocation = $application->location;
         $this->editAppliedAt = optional($application->applied_at)->format('Y-m-d');
         $this->editJobUrl = $application->job_url;
+        $this->editPersonalScore = $application->personal_score;
         $this->editNotes = $application->notes;
     }
 
@@ -129,6 +145,7 @@ class ApplicationsBoard extends Component
 
         $hasCityColumn = $this->hasCityColumn();
         $hasLocationColumn = $this->hasLocationColumn();
+        $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
 
         $application = Application::where('user_id', Auth::id())
             ->find($this->editingApplicationId);
@@ -144,6 +161,7 @@ class ApplicationsBoard extends Component
             'editLocation' => [$hasLocationColumn ? 'required' : 'nullable', 'string', 'max:255'],
             'editAppliedAt' => ['required', 'date'],
             'editJobUrl' => ['nullable', 'string', 'max:255'],
+            'editPersonalScore' => ['nullable', 'integer', 'between:0,10'],
             'editNotes' => ['nullable', 'string'],
         ]);
 
@@ -161,6 +179,10 @@ class ApplicationsBoard extends Component
 
         if ($hasLocationColumn) {
             $updateData['location'] = $data['editLocation'] ?? null;
+        }
+
+        if ($hasPersonalScoreColumn) {
+            $updateData['personal_score'] = $data['editPersonalScore'] ?? null;
         }
 
         $application->update($updateData);
@@ -200,6 +222,7 @@ class ApplicationsBoard extends Component
             'location',
             'applied_at',
             'job_url',
+            'personal_score',
         ]);
 
         $this->resetValidation();
@@ -216,6 +239,7 @@ class ApplicationsBoard extends Component
             'editLocation',
             'editAppliedAt',
             'editJobUrl',
+            'editPersonalScore',
             'editNotes',
         ]);
 

@@ -106,6 +106,11 @@
                 <input type="url" placeholder="Job URL (optional)" wire:model.live="job_url" class="w-full border rounded px-3 py-2" />
                 @error('job_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
+
+            <div>
+                <input type="number" min="0" max="10" step="1" placeholder="Personal score (0-10)" wire:model.live="personal_score" class="w-full border rounded px-3 py-2" />
+                @error('personal_score') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold">
@@ -166,6 +171,10 @@
                             <span class="font-medium">🗺️ Location:</span>
                             {{ $app->location ?: 'Not informed' }}
                         </div>
+                        <div>
+                            <span class="font-medium">⭐ Personal score:</span>
+                            {{ is_null($app->personal_score) ? 'Not rated' : $app->personal_score . '/10' }}
+                        </div>
                         @if ($app->notes)
                         <div>
                             <span class="font-medium">📝 Notes:</span>
@@ -199,38 +208,43 @@
             <form wire:submit.prevent="updateApplication" class="space-y-4">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                        <input type="text" placeholder="Company name" wire:model.live="editCompany" class="w-full border rounded px-3 py-2" />
+                        <input type="text" placeholder="Company name" wire:model.defer="editCompany" class="w-full border rounded px-3 py-2" />
                         @error('editCompany') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <input type="text" placeholder="Position" wire:model.live="editPosition" class="w-full border rounded px-3 py-2" />
+                        <input type="text" placeholder="Position" wire:model.defer="editPosition" class="w-full border rounded px-3 py-2" />
                         @error('editPosition') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <input type="text" placeholder="City" wire:model.live="editCity" class="w-full border rounded px-3 py-2" />
+                        <input type="text" placeholder="City" wire:model.defer="editCity" class="w-full border rounded px-3 py-2" />
                         @error('editCity') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <input type="text" placeholder="Location" wire:model.live="editLocation" class="w-full border rounded px-3 py-2" />
+                        <input type="text" placeholder="Location" wire:model.defer="editLocation" class="w-full border rounded px-3 py-2" />
                         @error('editLocation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <input type="date" wire:model.live="editAppliedAt" class="w-full border rounded px-3 py-2" />
+                        <input type="date" wire:model.defer="editAppliedAt" class="w-full border rounded px-3 py-2" />
                         @error('editAppliedAt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <input type="url" placeholder="Job URL (optional)" wire:model.live="editJobUrl" class="w-full border rounded px-3 py-2" />
+                        <input type="url" placeholder="Job URL (optional)" wire:model.defer="editJobUrl" class="w-full border rounded px-3 py-2" />
                         @error('editJobUrl') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <input type="number" min="0" max="10" step="1" placeholder="Personal score (0-10)" wire:model.defer="editPersonalScore" class="w-full border rounded px-3 py-2" />
+                        @error('editPersonalScore') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
                 <div>
-                    <textarea placeholder="Notes" wire:model.live="editNotes" rows="4" class="w-full border rounded px-3 py-2"></textarea>
+                    <textarea placeholder="Notes" wire:model.defer="editNotes" rows="4" class="w-full border rounded px-3 py-2"></textarea>
                     @error('editNotes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
