@@ -158,24 +158,26 @@
                 <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}">
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-3">
+                                @if ($hasFavoriteColumn)
+                                    <div class="flex h-10 w-10 min-h-10 min-w-10 max-h-10 max-w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white">
+                                        <button
+                                            type="button"
+                                            wire:click="toggleFavorite({{ $app->id }})"
+                                            class="flex h-full w-full items-center justify-center text-2xl leading-none transition {{ $app->is_favorite ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400' }}"
+                                            title="Mark as favorite"
+                                            aria-label="Toggle favorite"
+                                        >
+                                            ★
+                                        </button>
+                                    </div>
+                                @endif
+
                                 <div class="text-sm font-semibold text-blue-700 uppercase">
                                     {{ $app->position }}
                                 </div>
-
-                                @if ($hasFavoriteColumn)
-                                    <button
-                                        type="button"
-                                        wire:click="toggleFavorite({{ $app->id }})"
-                                        class="rounded-md px-1.5 py-0.5 text-lg leading-none transition {{ $app->is_favorite ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400' }}"
-                                        title="Mark as favorite"
-                                        aria-label="Toggle favorite"
-                                    >
-                                        ★
-                                    </button>
-                                @endif
                             </div>
-                            <div class="text-xs text-gray-400">
+                            <div class="text-xs text-gray-400 pt-2">
                                 {{ $app->applied_at?->format('d/m/Y') }}
                             </div>
                         </div>
