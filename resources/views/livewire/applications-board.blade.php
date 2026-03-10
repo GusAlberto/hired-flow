@@ -1,4 +1,13 @@
 <div class="p-8">
+    @php
+        $columns = [
+            'applied' => ['label' => 'Aplicadas', 'items' => $applied],
+            'waiting' => ['label' => 'Aguardando', 'items' => $waiting],
+            'interview' => ['label' => 'Entrevista', 'items' => $interview],
+            'rejected' => ['label' => 'Rejeitadas', 'items' => $rejected],
+            'offer' => ['label' => 'Oferta', 'items' => $offer],
+        ];
+    @endphp
 
     <h1 class="text-3xl font-bold mb-8">
         Job Application Tracker
@@ -8,7 +17,7 @@
 
         <div class="bg-white shadow p-4 rounded">
 
-            Total Applications
+            Total de candidaturas
 
             <div class="text-2xl font-bold">
                 {{ $total }}
@@ -18,7 +27,7 @@
 
         <div class="bg-white shadow p-4 rounded">
 
-            Interviews
+            Entrevistas
 
             <div class="text-2xl font-bold">
                 {{ $interviews }}
@@ -28,7 +37,7 @@
 
         <div class="bg-white shadow p-4 rounded">
 
-            Offers
+            Ofertas
 
             <div class="text-2xl font-bold">
                 {{ $offers }}
@@ -38,85 +47,125 @@
 
     </div>
 
-    <form wire:submit.prevent="addApplication" class="bg-white shadow rounded p-4 mb-8 flex gap-4">
+    <form wire:submit.prevent="saveApplication" class="bg-white shadow rounded p-4 mb-8 space-y-4">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">
+                    {{ $editingApplicationId ? 'Editar candidatura' : 'Nova candidatura' }}
+                </h2>
+                <p class="text-sm text-gray-500">
+                    Preencha os dados que aparecem no card do quadro.
+                </p>
+            </div>
 
-        <input type="text" placeholder="Company" wire:model="company" class="border rounded px-3 py-2 w-1/4" />
+            @if ($editingApplicationId)
+                <button type="button" wire:click="cancelEditing" class="text-sm font-medium text-gray-600 hover:text-gray-900">
+                    Cancelar
+                </button>
+            @endif
+        </div>
 
-        <input type="text" placeholder="Position" wire:model="position" class="border rounded px-3 py-2 w-1/4" />
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div>
+                <input type="text" placeholder="Nome da empresa" wire:model.live="company" class="w-full border rounded px-3 py-2" />
+                @error('company') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
 
-        <input type="date" wire:model="applied_at" class="border rounded px-3 py-2" />
+            <div>
+                <input type="text" placeholder="Cargo" wire:model.live="position" class="w-full border rounded px-3 py-2" />
+                @error('position') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <input type="text" placeholder="Cidade da vaga" wire:model.live="city" class="w-full border rounded px-3 py-2" />
+                @error('city') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <input type="text" placeholder="Localização" wire:model.live="location" class="w-full border rounded px-3 py-2" />
+                @error('location') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <input type="date" wire:model.live="applied_at" class="w-full border rounded px-3 py-2" />
+                @error('applied_at') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <input type="url" placeholder="URL da vaga (opcional)" wire:model.live="job_url" class="w-full border rounded px-3 py-2" />
+                @error('job_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+            </div>
+        </div>
 
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold">
-            Add Application
+            {{ $editingApplicationId ? 'Salvar alterações' : 'Adicionar candidatura' }}
         </button>
-
     </form>
 
-    <div class="grid grid-cols-5 gap-6">
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
+        @foreach ($columns as $status => $column)
+        <div class="rounded-2xl bg-gray-50 p-4 border border-gray-200">
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <h2 class="font-bold text-gray-900">{{ $column['label'] }}</h2>
+                <span class="inline-flex min-w-8 items-center justify-center rounded-full bg-white px-2.5 py-1 text-sm font-semibold text-gray-700 border border-gray-200">
+                    {{ $column['items']->count() }}
+                </span>
+            </div>
 
-        <div>
-            <h2 class="font-bold mb-3">Applied</h2>
-            <div id="applied">
-                @foreach($applied as $app)
+            <div id="{{ $status }}" class="space-y-3 min-h-24">
+                @foreach ($column['items'] as $app)
+                <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}">
+                    <div class="mb-3 flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-semibold text-blue-700">
+                                {{ $app->position }}
+                            </div>
+                            <div class="text-xs text-gray-400">
+                                {{ $app->applied_at?->format('d/m/Y') }}
+                            </div>
+                        </div>
 
-                <div class="card" data-id="{{ $app->id }}">
+                        <details class="card-actions relative">
+                            <summary class="cursor-pointer list-none rounded-lg px-2 py-1 text-lg leading-none text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                                ...
+                            </summary>
 
-                    <strong>{{ $app->company }}</strong>
-
-                    <div class="text-sm text-gray-500">
-                        {{ $app->position }}
+                            <div class="absolute right-0 z-10 mt-2 w-36 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                                <button type="button" wire:click="editApplication({{ $app->id }})" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
+                                    Editar
+                                </button>
+                                <button type="button" wire:click="deleteApplication({{ $app->id }})" wire:confirm="Delete this application?" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">
+                                    Excluir
+                                </button>
+                            </div>
+                        </details>
                     </div>
 
-                </div>
-
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <div>
+                            <span class="font-medium">🏢 Nome da empresa:</span>
+                            {{ $app->company }}
+                        </div>
+                        <div>
+                            <span class="font-medium">📍 Cidade da vaga:</span>
+                            {{ $app->city ?: 'Não informado' }}
+                        </div>
+                        <div>
+                            <span class="font-medium">🗺️ Localização:</span>
+                            {{ $app->location ?: 'Não informado' }}
+                        </div>
+                    </div>
+                </article>
                 @endforeach
+
+                @if ($column['items']->isEmpty())
+                <div class="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-4 py-6 text-center text-sm text-gray-400">
+                    Nenhuma candidatura nesta coluna.
+                </div>
+                @endif
             </div>
         </div>
-
-        <div>
-            <h2 class="font-bold mb-3">Waiting</h2>
-            <div id="waiting">
-                @foreach($waiting as $app)
-                <div class="card" data-id="{{ $app->id }}">
-                    <strong>{{ $app->company }}</strong>
-                </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div>
-            <h2 class="font-bold mb-3">Interview</h2>
-            <div id="interview">
-                @foreach($interview as $app)
-                <div class="card" data-id="{{ $app->id }}">
-                    <strong>{{ $app->company }}</strong>
-                </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div>
-            <h2 class="font-bold mb-3">Rejected</h2>
-            <div id="rejected">
-                @foreach($rejected as $app)
-                <div class="card" data-id="{{ $app->id }}">
-                    <strong>{{ $app->company }}</strong>
-                </div>
-                @endforeach
-            </div>
-        </div>
-
-        <div>
-            <h2 class="font-bold mb-3">Offer</h2>
-            <div id="offer">
-                @foreach($offer as $app)
-                <div class="card" data-id="{{ $app->id }}">
-                    <strong>{{ $app->company }}</strong>
-                </div>
-                @endforeach
-            </div>
-        </div>
-
+        @endforeach
     </div>
 
 </div>
@@ -135,6 +184,8 @@
             el._sortable = new Sortable(el, {
                 group: 'jobs',
                 animation: 150,
+                filter: 'details, summary, button',
+                preventOnFilter: false,
                 onEnd: function(evt) {
                     const id = evt.item.dataset.id
                     const newStatus = evt.to.id

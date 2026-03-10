@@ -9,28 +9,105 @@ use Illuminate\Support\Facades\Auth;
 
 class ApplicationsBoard extends Component
 {
+    public $editingApplicationId = null;
     public $company;
     public $position;
+    public $city;
+    public $location;
     public $applied_at;
     public $job_url;
 
-    public function addApplication()
+    public function saveApplication()
     {
-        Application::create([
-            'user_id' => Auth::id(),
-            'company' => $this->company,
-            'position' => $this->position,
-            'applied_at' => $this->applied_at,
-            'job_url' => $this->job_url,
-            'status' => 'applied'
+        $data = $this->validate([
+            'company' => ['required', 'string', 'max:255'],
+            'position' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'location' => ['required', 'string', 'max:255'],
+            'applied_at' => ['required', 'date'],
+            'job_url' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $this->reset();
+        if ($this->editingApplicationId) {
+            $application = Application::where('user_id', Auth::id())
+                ->find($this->editingApplicationId);
+
+            if (!$application) {
+                return;
+            }
+
+            $application->update($data);
+            $this->resetForm();
+
+            return;
+        }
+
+        Application::create([
+            ...$data,
+            'user_id' => Auth::id(),
+            'status' => 'applied',
+        ]);
+
+        $this->resetForm();
+    }
+
+    public function editApplication($id)
+    {
+        $application = Application::where('user_id', Auth::id())->find($id);
+
+        if (!$application) {
+            return;
+        }
+
+        $this->editingApplicationId = $application->id;
+        $this->company = $application->company;
+        $this->position = $application->position;
+        $this->city = $application->city;
+        $this->location = $application->location;
+        $this->applied_at = optional($application->applied_at)->format('Y-m-d');
+        $this->job_url = $application->job_url;
+    }
+
+    public function deleteApplication($id)
+    {
+        $application = Application::where('user_id', Auth::id())->find($id);
+
+        if (!$application) {
+            return;
+        }
+
+        $application->delete();
+
+        if ($this->editingApplicationId === (int) $id) {
+            $this->resetForm();
+        }
+    }
+
+    public function cancelEditing()
+    {
+        $this->resetForm();
+    }
+
+    protected function resetForm()
+    {
+        $this->reset([
+            'editingApplicationId',
+            'company',
+            'position',
+            'city',
+            'location',
+            'applied_at',
+            'job_url',
+        ]);
+
+        $this->resetValidation();
     }
 
     public function render()
     {
-    $apps = Application::where('user_id', Auth::id())->get();
+        $apps = Application::where('user_id', Auth::id())
+            ->latest('updated_at')
+            ->get();
 
         $total = $apps->count();
 
