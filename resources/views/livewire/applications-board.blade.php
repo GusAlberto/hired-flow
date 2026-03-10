@@ -139,15 +139,8 @@
                     const id = evt.item.dataset.id
                     const newStatus = evt.to.id
 
-                    // Emit Livewire event with positional args (id, status)
-                    if (window.Livewire && typeof Livewire.emit === 'function') {
-                        Livewire.emit('moveApplication', id, newStatus)
-                    } else if (window.livewire && typeof livewire.emit === 'function') {
-                        // fallback for different Livewire builds
-                        livewire.emit('moveApplication', id, newStatus)
-                    } else {
-                        console.warn('Livewire not available to emit moveApplication')
-                    }
+                    // Livewire v3/v4: dispatch with named payload { id, status }
+                    Livewire.dispatch('moveApplication', { id: id, status: newStatus })
                 }
             })
         })
