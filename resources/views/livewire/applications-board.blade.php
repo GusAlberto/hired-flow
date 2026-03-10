@@ -25,7 +25,7 @@
         </button>
     </div>
 
-    <div class="grid grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
 
         <div class="bg-white shadow p-4 rounded">
 
@@ -57,7 +57,31 @@
 
         </div>
 
+        <button type="button" wire:click="toggleFavoritesFilter" class="bg-white shadow p-4 rounded text-left transition border {{ $showFavoritesOnly ? 'border-yellow-400 ring-2 ring-yellow-200' : 'border-transparent hover:border-yellow-300' }}">
+
+            Favorite jobs
+
+            <div class="text-2xl font-bold flex items-center gap-2">
+                <span>{{ $favorites }}</span>
+                <span class="text-yellow-500">★</span>
+            </div>
+
+            <div class="text-xs text-gray-500 mt-1">
+                Click to {{ $showFavoritesOnly ? 'show all jobs' : 'filter only favorites' }}
+            </div>
+
+        </button>
+
     </div>
+
+    @if ($showFavoritesOnly)
+        <div class="mb-4 flex items-center justify-between rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+            <span>Showing only favorite applications.</span>
+            <button type="button" wire:click="clearFavoritesFilter" class="font-semibold underline">
+                Clear filter
+            </button>
+        </div>
+    @endif
 
     @if ($isCreateFormOpen)
     <form wire:submit.prevent="saveApplication" class="bg-white shadow rounded p-4 mb-8 space-y-4">
@@ -134,10 +158,26 @@
                 <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}">
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
-                            <div class="text-sm font-semibold text-blue-700 uppercase">
-                                {{ $app->position }}
+                            <div class="flex items-center gap-3">
+                                @if ($hasFavoriteColumn)
+                                    <div class="flex h-10 w-10 min-h-10 min-w-10 max-h-10 max-w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white">
+                                        <button
+                                            type="button"
+                                            wire:click="toggleFavorite({{ $app->id }})"
+                                            class="flex h-full w-full items-center justify-center text-2xl leading-none transition {{ $app->is_favorite ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-400' }}"
+                                            title="Mark as favorite"
+                                            aria-label="Toggle favorite"
+                                        >
+                                            ★
+                                        </button>
+                                    </div>
+                                @endif
+
+                                <div class="text-sm font-semibold text-blue-700 uppercase">
+                                    {{ $app->position }}
+                                </div>
                             </div>
-                            <div class="text-xs text-gray-400">
+                            <div class="text-xs text-gray-400 pt-2">
                                 {{ $app->applied_at?->format('d/m/Y') }}
                             </div>
                         </div>
