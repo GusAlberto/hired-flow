@@ -104,6 +104,10 @@
         </div>
     @endif
 
+    <div class="my-8 flex items-center" aria-hidden="true">
+        <div class="h-px w-full bg-gray-300"></div>
+    </div>
+
     <x-modals.create-application-modal 
         :isOpen="$isCreateFormOpen"
         :company="$company"
