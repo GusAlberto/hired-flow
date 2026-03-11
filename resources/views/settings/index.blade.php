@@ -55,6 +55,20 @@
                             </button>
                         </div>
                     </form>
+
+                    <div class="mt-6 border-t border-gray-200 pt-5">
+                        <p class="mb-3 text-sm text-gray-600">
+                            Need to apply the archive rule now? Run a manual sweep immediately.
+                        </p>
+
+                        <form method="POST" action="{{ route('settings.archiving.run-now') }}">
+                            @csrf
+
+                            <button type="submit" class="rounded-xl bg-gray-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-900">
+                                Archive Now
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @endif
         </div>

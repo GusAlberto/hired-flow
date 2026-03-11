@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::patch('/settings/archiving', [SettingsController::class, 'updateArchiving'])->name('settings.archiving.update');
+    Route::post('/settings/archiving/run-now', [SettingsController::class, 'runArchivingNow'])->name('settings.archiving.run-now');
     
     Route::get('/dashboard', ApplicationsBoard::class)
         ->name('dashboard');

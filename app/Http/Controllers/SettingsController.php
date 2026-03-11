@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Application;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class SettingsController extends Controller
@@ -35,5 +38,29 @@ class SettingsController extends Controller
         return redirect()
             ->route('settings.index', ['tab' => 'archiving'])
             ->with('status', 'Archive settings updated successfully.');
+    }
+
+    public function runArchivingNow(Request $request): RedirectResponse
+    {
+        $archiveAfterDays = max(1, min(365, (int) ($request->user()->archive_after_days ?: 30)));
+        $thresholdDate = Carbon::today()->subDays($archiveAfterDays);
+        $hasStageColumn = Schema::hasColumn('applications', 'stage');
+
+        $query = Application::query()
+            ->where('user_id', $request->user()->id)
+            ->whereDate('applied_at', '<=', $thresholdDate)
+            ->where('status', '!=', 'archived');
+
+        $updateData = ['status' => 'archived'];
+
+        if ($hasStageColumn) {
+            $updateData['stage'] = 'archived';
+        }
+
+        $archivedCount = $query->update($updateData);
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'archiving'])
+            ->with('status', "Manual archive completed. {$archivedCount} application(s) archived.");
     }
 }
