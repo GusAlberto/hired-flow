@@ -307,11 +307,20 @@
             el._sortable = new Sortable(el, {
                 group: 'jobs',
                 animation: 150,
+                draggable: '.card',
                 filter: 'details, summary, button',
                 preventOnFilter: false,
                 onEnd: function(evt) {
+                    if (!evt?.item?.dataset) {
+                        return
+                    }
+
                     const id = evt.item.dataset.id
                     const newStatus = evt.to.id
+
+                    if (!id || !newStatus) {
+                        return
+                    }
 
                     if (evt.from.id !== 'interview' && newStatus === 'interview') {
                         const referenceNode = evt.from.children[evt.oldIndex] ?? null

@@ -386,8 +386,12 @@ class ApplicationsBoard extends Component
     }
 
     #[On('prepareInterviewMove')]
-    public function prepareInterviewMove($id)
+    public function prepareInterviewMove($id = null)
     {
+        if (!$id) {
+            return;
+        }
+
         $application = Application::where('user_id', Auth::id())->find($id);
 
         if (!$application) {
@@ -616,8 +620,12 @@ class ApplicationsBoard extends Component
     }
 
     #[On('moveApplication')]
-    public function moveApplication($id, $status)
+    public function moveApplication($id = null, $status = null)
     {
+        if (!$id || !$status) {
+            return;
+        }
+
         $hasStageColumn = $this->hasStageColumn();
 
         $app = Application::find($id);
