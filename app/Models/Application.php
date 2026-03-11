@@ -17,6 +17,12 @@ class Application extends Model
         'status',
         'applied_at',
         'job_url',
+        'interview_date',
+        'interview_time',
+        'interview_location',
+        'interview_is_remote',
+        'interview_platform',
+        'interview_address',
         'notes',
         'personal_score',
     ];
@@ -24,6 +30,8 @@ class Application extends Model
     protected $casts = [
         'applied_at' => 'date',
         'is_favorite' => 'boolean',
+        'interview_date' => 'date',
+        'interview_is_remote' => 'boolean',
         'personal_score' => 'integer',
     ];
 }

@@ -215,6 +215,37 @@
                             <span class="font-medium">⭐ Personal score:</span>
                             {{ is_null($app->personal_score) ? 'Not rated' : $app->personal_score . '/10' }}
                         </div>
+                        @if ($app->status === 'interview' && ($app->interview_date || $app->interview_time || $app->interview_location || $app->interview_platform || $app->interview_address))
+                        <div>
+                            <span class="font-medium">📅 Interview:</span>
+                            {{ $app->interview_date?->format('d/m/Y') ?? 'Date not set' }}
+                            @if ($app->interview_time)
+                                at {{ $app->interview_time }}
+                            @endif
+                        </div>
+                        @if ($app->interview_location)
+                        <div>
+                            <span class="font-medium">📍 Interview location:</span>
+                            {{ $app->interview_location }}
+                        </div>
+                        @endif
+                        <div>
+                            <span class="font-medium">🧭 Format:</span>
+                            {{ $app->interview_is_remote ? 'Remote' : 'In person' }}
+                        </div>
+                        @if ($app->interview_is_remote && $app->interview_platform)
+                        <div>
+                            <span class="font-medium">💻 Platform:</span>
+                            {{ $app->interview_platform }}
+                        </div>
+                        @endif
+                        @if (!$app->interview_is_remote && $app->interview_address)
+                        <div>
+                            <span class="font-medium">🏢 Address:</span>
+                            {{ $app->interview_address }}
+                        </div>
+                        @endif
+                        @endif
                         @if ($app->notes)
                         <div>
                             <span class="font-medium">📝 Notes:</span>
@@ -301,6 +332,64 @@
     </div>
     @endif
 
+    @if ($isInterviewModalOpen)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" wire:key="interview-modal">
+        <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+            <div class="mb-4 flex items-center justify-between gap-4">
+                <h2 class="text-xl font-semibold text-gray-900">Schedule interview</h2>
+                <button type="button" wire:click="closeInterviewModal" class="rounded-lg px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                    Close
+                </button>
+            </div>
+
+            <form wire:submit.prevent="saveInterviewMove" class="space-y-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                        <input type="date" wire:model.defer="interviewDate" class="w-full border rounded px-3 py-2" />
+                        @error('interviewDate') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <input type="time" wire:model.defer="interviewTime" class="w-full border rounded px-3 py-2" />
+                        @error('interviewTime') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div>
+                    <input type="text" placeholder="Interview location (optional)" wire:model.defer="interviewLocation" class="w-full border rounded px-3 py-2" />
+                    @error('interviewLocation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <label class="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
+                    <span class="text-sm font-medium text-gray-700">Remote interview</span>
+                    <input type="checkbox" wire:model.live="interviewIsRemote" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                </label>
+
+                @if ($interviewIsRemote)
+                    <div>
+                        <input type="text" placeholder="Platform (optional)" wire:model.defer="interviewPlatform" class="w-full border rounded px-3 py-2" />
+                        @error('interviewPlatform') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                @else
+                    <div>
+                        <input type="text" placeholder="Interview address" wire:model.defer="interviewAddress" class="w-full border rounded px-3 py-2" />
+                        @error('interviewAddress') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+                @endif
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" wire:click="closeInterviewModal" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+                        Save interview
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -322,6 +411,14 @@
                 onEnd: function(evt) {
                     const id = evt.item.dataset.id
                     const newStatus = evt.to.id
+
+                    if (evt.from.id !== 'interview' && newStatus === 'interview') {
+                        const referenceNode = evt.from.children[evt.oldIndex] ?? null
+                        evt.from.insertBefore(evt.item, referenceNode)
+
+                        Livewire.dispatch('prepareInterviewMove', { id: id })
+                        return
+                    }
 
                     // Livewire v3/v4: dispatch with named payload { id, status }
                     Livewire.dispatch('moveApplication', { id: id, status: newStatus })
