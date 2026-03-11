@@ -138,8 +138,10 @@
                 wire:loading.class="cursor-not-allowed opacity-60"
                 wire:target="toggleKanbanOrientation,setKanbanTogglePosition"
                 aria-label="Toggle kanban orientation"
-                class="group absolute top-0 inline-flex h-12 w-12 touch-none items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition-[left,right,background-color,opacity,transform,box-shadow] duration-100 ease-out hover:bg-gray-100"
-                :class="dragging ? 'scale-105 shadow-lg cursor-grabbing' : 'cursor-grab'"
+                class="group absolute top-0 inline-flex h-12 w-12 touch-none items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-100"
+                :class="dragging
+                    ? 'cursor-grabbing scale-105 shadow-lg transition-none'
+                    : 'cursor-grab transition-[left,right,background-color,opacity,transform,box-shadow] duration-150 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]'"
                 style="will-change: left, transform;"
                 :style="buttonStyle()"
             >
@@ -374,6 +376,7 @@
             pointerId: null,
             currentLeft: null,
             startX: 0,
+            grabOffsetX: 0,
 
             buttonStyle() {
                 if (this.currentLeft !== null) {
@@ -389,6 +392,7 @@
                 this.pointerId = event.pointerId
                 this.startX = event.clientX
                 this.currentLeft = this.side === 'left' ? 0 : this.maxLeft()
+                this.grabOffsetX = event.clientX - this.$refs.button.getBoundingClientRect().left
 
                 if (this.$refs.button.setPointerCapture) {
                     this.$refs.button.setPointerCapture(event.pointerId)
@@ -423,6 +427,7 @@
                 this.dragging = false
                 this.pointerId = null
                 this.currentLeft = null
+                this.grabOffsetX = 0
             },
 
             cancelDrag() {
@@ -433,6 +438,7 @@
                 this.dragging = false
                 this.pointerId = null
                 this.currentLeft = null
+                this.grabOffsetX = 0
                 this.didDrag = false
             },
 
@@ -448,8 +454,7 @@
 
             pointerToLeft(clientX) {
                 const trackRect = this.$refs.track.getBoundingClientRect()
-                const halfButton = this.buttonWidth() / 2
-                const rawLeft = clientX - trackRect.left - halfButton
+                const rawLeft = clientX - trackRect.left - this.grabOffsetX
 
                 return Math.min(Math.max(rawLeft, 0), this.maxLeft())
             },
