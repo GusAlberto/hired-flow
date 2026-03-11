@@ -25,6 +25,8 @@ class Application extends Model
         'interview_address',
         'notes',
         'personal_score',
+        'salary_offered',
+        'salary_expected',
     ];
 
     protected $casts = [
@@ -33,5 +35,7 @@ class Application extends Model
         'interview_date' => 'date',
         'interview_is_remote' => 'boolean',
         'personal_score' => 'integer',
+        'salary_offered' => 'decimal:2',
+        'salary_expected' => 'decimal:2',
     ];
 }

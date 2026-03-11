@@ -7,6 +7,8 @@
     'appliedAt' => null,
     'jobUrl' => '',
     'personalScore' => null,
+    'salaryOffered' => null,
+    'salaryExpected' => null,
 ])
 
 @if ($isOpen)
@@ -60,6 +62,16 @@
         <div>
             <input type="number" min="0" max="10" step="1" placeholder="Personal score (0-10)" wire:model.live="personal_score" class="w-full border rounded px-3 py-2" />
             @error('personal_score') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <input type="number" min="0" step="0.01" placeholder="Company budget salary (optional)" wire:model.live="salary_offered" class="w-full border rounded px-3 py-2" />
+            @error('salary_offered') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
+            <input type="number" min="0" step="0.01" placeholder="Expected salary (optional)" wire:model.live="salary_expected" class="w-full border rounded px-3 py-2" />
+            @error('salary_expected') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
     </div>
 

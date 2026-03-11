@@ -25,7 +25,7 @@
         </button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
 
         <div class="bg-white shadow p-4 rounded">
 
@@ -72,6 +72,21 @@
 
         </button>
 
+        <button type="button" wire:click="toggleArchivedSection" class="bg-white shadow p-4 rounded text-left transition border {{ $showArchivedSection ? 'border-gray-500 ring-2 ring-gray-200' : 'border-transparent hover:border-gray-300' }}">
+
+            Archived
+
+            <div class="text-2xl font-bold flex items-center gap-2">
+                <span>{{ $archivedCount }}</span>
+                <span class="text-gray-500">🗂️</span>
+            </div>
+
+            <div class="text-xs text-gray-500 mt-1">
+                Click to {{ $showArchivedSection ? 'hide archived list' : 'show archived list' }}
+            </div>
+
+        </button>
+
     </div>
 
     @if ($showFavoritesOnly)
@@ -80,6 +95,33 @@
             <button type="button" wire:click="clearFavoritesFilter" class="font-semibold underline">
                 Clear filter
             </button>
+        </div>
+    @endif
+
+    @if ($showArchivedSection)
+        <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">Archived applications</h2>
+                <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                    {{ $archivedCount }} items
+                </span>
+            </div>
+
+            @if ($archived->isEmpty())
+                <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
+                    No archived applications yet.
+                </div>
+            @else
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach ($archived as $app)
+                        <article class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3" wire:key="archived-{{ $app->id }}">
+                            <div class="text-sm font-semibold text-gray-900 uppercase">{{ $app->position }}</div>
+                            <div class="text-sm text-gray-700">{{ $app->company }}</div>
+                            <div class="mt-1 text-xs text-gray-500">Applied: {{ $app->applied_at?->format('d/m/Y') ?? '-' }}</div>
+                        </article>
+                    @endforeach
+                </div>
+            @endif
         </div>
     @endif
 
@@ -92,6 +134,8 @@
         :appliedAt="$applied_at"
         :jobUrl="$job_url"
         :personalScore="$personal_score"
+        :salaryOffered="$salary_offered"
+        :salaryExpected="$salary_expected"
     />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
@@ -106,7 +150,7 @@
 
             <div id="{{ $status }}" class="space-y-3 min-h-24">
                 @foreach ($column['items'] as $app)
-                <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}">
+                <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}" x-data="{ expanded: false }">
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
                             <div class="flex items-center gap-3">
@@ -162,9 +206,40 @@
                             <span class="font-medium">🗺️ Location:</span>
                             {{ $app->location ?: 'Not informed' }}
                         </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <span class="font-medium">⭐ Personal score:</span>
+                                {{ is_null($app->personal_score) ? 'Not rated' : $app->personal_score . '/10' }}
+                            </div>
+                            <button
+                                type="button"
+                                @click="expanded = !expanded"
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                                :aria-expanded="expanded"
+                                aria-label="Toggle job details"
+                                title="Show more details"
+                            >
+                                <svg
+                                    class="h-4 w-4 transition-transform duration-200"
+                                    :class="expanded ? 'rotate-180' : ''"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div x-show="expanded" x-transition.opacity.duration.150ms class="space-y-2 border-t border-gray-200 pt-2">
                         <div>
-                            <span class="font-medium">⭐ Personal score:</span>
-                            {{ is_null($app->personal_score) ? 'Not rated' : $app->personal_score . '/10' }}
+                            <span class="font-medium">💼 Company budget:</span>
+                            {{ is_null($app->salary_offered) ? 'Not informed' : 'R$ ' . number_format((float) $app->salary_offered, 2, ',', '.') }}
+                        </div>
+                        <div>
+                            <span class="font-medium">🎯 Expected salary:</span>
+                            {{ is_null($app->salary_expected) ? 'Not informed' : 'R$ ' . number_format((float) $app->salary_expected, 2, ',', '.') }}
                         </div>
                         @if ($app->status === 'interview' && ($app->interview_date || $app->interview_time || $app->interview_location || $app->interview_platform || $app->interview_address))
                         <div class="my-2 border-t border-gray-200"></div>
@@ -204,6 +279,7 @@
                             {{ $app->notes }}
                         </div>
                         @endif
+                        </div>
                     </div>
                 </article>
                 @endforeach
@@ -227,6 +303,8 @@
         :appliedAt="$editAppliedAt"
         :jobUrl="$editJobUrl"
         :personalScore="$editPersonalScore"
+        :salaryOffered="$editSalaryOffered"
+        :salaryExpected="$editSalaryExpected"
         :notes="$editNotes"
         :editingIsInterview="$editingIsInterview"
         :interviewDate="$editInterviewDate"
@@ -261,11 +339,20 @@
             el._sortable = new Sortable(el, {
                 group: 'jobs',
                 animation: 150,
+                draggable: '.card',
                 filter: 'details, summary, button',
                 preventOnFilter: false,
                 onEnd: function(evt) {
+                    if (!evt?.item?.dataset) {
+                        return
+                    }
+
                     const id = evt.item.dataset.id
                     const newStatus = evt.to.id
+
+                    if (!id || !newStatus) {
+                        return
+                    }
 
                     if (evt.from.id !== 'interview' && newStatus === 'interview') {
                         const referenceNode = evt.from.children[evt.oldIndex] ?? null

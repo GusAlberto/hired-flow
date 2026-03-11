@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\ApplicationsBoard;
 
@@ -16,6 +17,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::patch('/settings/archiving', [SettingsController::class, 'updateArchiving'])->name('settings.archiving.update');
     
     Route::get('/dashboard', ApplicationsBoard::class)
         ->name('dashboard');
