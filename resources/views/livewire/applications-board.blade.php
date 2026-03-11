@@ -138,7 +138,17 @@
         :salaryExpected="$salary_expected"
     />
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
+    <div class="mb-4 flex justify-end">
+        <button
+            type="button"
+            wire:click="toggleKanbanOrientation"
+            class="inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-100"
+        >
+            {{ $kanbanOrientation === 'horizontal' ? 'Switch to vertical view' : 'Switch to horizontal view' }}
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 {{ $kanbanOrientation === 'horizontal' ? 'xl:grid-cols-5' : '' }}">
         @foreach ($columns as $status => $column)
         <div class="rounded-2xl bg-gray-50 p-4 border border-gray-200">
             <div class="mb-3 flex items-center justify-between gap-3">
