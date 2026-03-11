@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Application;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -119,10 +120,17 @@ class ApplicationsBoard extends Component
 
     protected function archiveExpiredApplications(bool $hasStageColumn): void
     {
+        $userId = Auth::id();
+        $cacheKey = "archive_sweep_{$userId}";
+
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+
         $thresholdDate = Carbon::today()->subDays($this->getArchiveAfterDays());
 
         $query = Application::query()
-            ->where('user_id', Auth::id())
+            ->where('user_id', $userId)
             ->whereDate('applied_at', '<=', $thresholdDate)
             ->where('status', '!=', 'archived');
 
@@ -133,6 +141,9 @@ class ApplicationsBoard extends Component
         }
 
         $query->update($updateData);
+
+        // Flag expira à meia-noite — varredura roda no máximo 1x por dia
+        Cache::put($cacheKey, true, Carbon::now()->secondsUntilEndOfDay());
     }
 
     public function saveApplication()
