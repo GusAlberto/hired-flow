@@ -28,6 +28,9 @@ class ApplicationsBoard extends Component
     public $applied_at;
     public $job_url;
     public $personal_score;
+    public $salary_offered;
+    public $salary_expected;
+    public $job_summary;
 
     public $editingApplicationId = null;
     public $isEditModalOpen = false;
@@ -41,6 +44,9 @@ class ApplicationsBoard extends Component
     public $editAppliedAt;
     public $editJobUrl;
     public $editPersonalScore;
+    public $editSalaryOffered;
+    public $editSalaryExpected;
+    public $editJobSummary;
     public $editNotes;
     public $editInterviewDate;
     public $editInterviewTime;
@@ -77,6 +83,21 @@ class ApplicationsBoard extends Component
         return Schema::hasColumn('applications', 'personal_score');
     }
 
+    protected function hasSalaryOfferedColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'salary_offered');
+    }
+
+    protected function hasSalaryExpectedColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'salary_expected');
+    }
+
+    protected function hasJobSummaryColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'job_summary');
+    }
+
     protected function hasFavoriteColumn(): bool
     {
         return Schema::hasColumn('applications', 'is_favorite');
@@ -99,6 +120,9 @@ class ApplicationsBoard extends Component
         $hasCityColumn = $this->hasCityColumn();
         $hasLocationColumn = $this->hasLocationColumn();
         $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
+        $hasSalaryOfferedColumn = $this->hasSalaryOfferedColumn();
+        $hasSalaryExpectedColumn = $this->hasSalaryExpectedColumn();
+        $hasJobSummaryColumn = $this->hasJobSummaryColumn();
 
         $data = $this->validate([
             'company' => ['required', 'string', 'max:255'],
@@ -108,6 +132,9 @@ class ApplicationsBoard extends Component
             'applied_at' => ['required', 'date'],
             'job_url' => ['nullable', 'string', 'max:255'],
             'personal_score' => ['nullable', 'integer', 'between:0,10'],
+            'salary_offered' => ['nullable', 'numeric', 'min:0'],
+            'salary_expected' => ['nullable', 'numeric', 'min:0'],
+            'job_summary' => ['nullable', 'string', 'max:1500'],
         ]);
 
         $createData = [
@@ -127,6 +154,18 @@ class ApplicationsBoard extends Component
 
         if ($hasPersonalScoreColumn) {
             $createData['personal_score'] = $data['personal_score'] ?? null;
+        }
+
+        if ($hasSalaryOfferedColumn) {
+            $createData['salary_offered'] = $data['salary_offered'] ?? null;
+        }
+
+        if ($hasSalaryExpectedColumn) {
+            $createData['salary_expected'] = $data['salary_expected'] ?? null;
+        }
+
+        if ($hasJobSummaryColumn) {
+            $createData['job_summary'] = $data['job_summary'] ?? null;
         }
 
         if ($this->hasFavoriteColumn()) {
@@ -172,6 +211,9 @@ class ApplicationsBoard extends Component
         $this->editAppliedAt = optional($application->applied_at)->format('Y-m-d');
         $this->editJobUrl = $application->job_url;
         $this->editPersonalScore = $application->personal_score;
+        $this->editSalaryOffered = $application->salary_offered;
+        $this->editSalaryExpected = $application->salary_expected;
+        $this->editJobSummary = $application->job_summary;
         $this->editNotes = $application->notes;
         $this->editingIsInterview = ($application->stage ?? $application->status) === 'interview';
 
@@ -194,6 +236,9 @@ class ApplicationsBoard extends Component
         $hasCityColumn = $this->hasCityColumn();
         $hasLocationColumn = $this->hasLocationColumn();
         $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
+        $hasSalaryOfferedColumn = $this->hasSalaryOfferedColumn();
+        $hasSalaryExpectedColumn = $this->hasSalaryExpectedColumn();
+        $hasJobSummaryColumn = $this->hasJobSummaryColumn();
         $hasInterviewFields = $this->hasInterviewFields();
 
         $application = Application::where('user_id', Auth::id())
@@ -211,6 +256,9 @@ class ApplicationsBoard extends Component
             'editAppliedAt' => ['required', 'date'],
             'editJobUrl' => ['nullable', 'string', 'max:255'],
             'editPersonalScore' => ['nullable', 'integer', 'between:0,10'],
+            'editSalaryOffered' => ['nullable', 'numeric', 'min:0'],
+            'editSalaryExpected' => ['nullable', 'numeric', 'min:0'],
+            'editJobSummary' => ['nullable', 'string', 'max:1500'],
             'editNotes' => ['nullable', 'string'],
             'editInterviewDate' => [$this->editingIsInterview ? 'required' : 'nullable', 'date'],
             'editInterviewTime' => [$this->editingIsInterview ? 'required' : 'nullable'],
@@ -238,6 +286,18 @@ class ApplicationsBoard extends Component
 
         if ($hasPersonalScoreColumn) {
             $updateData['personal_score'] = $data['editPersonalScore'] ?? null;
+        }
+
+        if ($hasSalaryOfferedColumn) {
+            $updateData['salary_offered'] = $data['editSalaryOffered'] ?? null;
+        }
+
+        if ($hasSalaryExpectedColumn) {
+            $updateData['salary_expected'] = $data['editSalaryExpected'] ?? null;
+        }
+
+        if ($hasJobSummaryColumn) {
+            $updateData['job_summary'] = $data['editJobSummary'] ?? null;
         }
 
         if ($hasInterviewFields) {
@@ -387,6 +447,9 @@ class ApplicationsBoard extends Component
             'applied_at',
             'job_url',
             'personal_score',
+            'salary_offered',
+            'salary_expected',
+            'job_summary',
         ]);
 
         $this->resetValidation();
@@ -404,6 +467,9 @@ class ApplicationsBoard extends Component
             'editAppliedAt',
             'editJobUrl',
             'editPersonalScore',
+            'editSalaryOffered',
+            'editSalaryExpected',
+            'editJobSummary',
             'editNotes',
             'editInterviewDate',
             'editInterviewTime',

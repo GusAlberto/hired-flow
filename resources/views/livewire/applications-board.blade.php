@@ -92,6 +92,9 @@
         :appliedAt="$applied_at"
         :jobUrl="$job_url"
         :personalScore="$personal_score"
+        :salaryOffered="$salary_offered"
+        :salaryExpected="$salary_expected"
+        :jobSummary="$job_summary"
     />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
@@ -166,6 +169,20 @@
                             <span class="font-medium">⭐ Personal score:</span>
                             {{ is_null($app->personal_score) ? 'Not rated' : $app->personal_score . '/10' }}
                         </div>
+                        <div>
+                            <span class="font-medium">💼 Company budget:</span>
+                            {{ is_null($app->salary_offered) ? 'Not informed' : 'R$ ' . number_format((float) $app->salary_offered, 2, ',', '.') }}
+                        </div>
+                        <div>
+                            <span class="font-medium">🎯 Expected salary:</span>
+                            {{ is_null($app->salary_expected) ? 'Not informed' : 'R$ ' . number_format((float) $app->salary_expected, 2, ',', '.') }}
+                        </div>
+                        @if ($app->job_summary)
+                        <div>
+                            <span class="font-medium">📌 Job summary:</span>
+                            {{ $app->job_summary }}
+                        </div>
+                        @endif
                         @if ($app->status === 'interview' && ($app->interview_date || $app->interview_time || $app->interview_location || $app->interview_platform || $app->interview_address))
                         <div class="my-2 border-t border-gray-200"></div>
                         <div>
@@ -227,6 +244,9 @@
         :appliedAt="$editAppliedAt"
         :jobUrl="$editJobUrl"
         :personalScore="$editPersonalScore"
+        :salaryOffered="$editSalaryOffered"
+        :salaryExpected="$editSalaryExpected"
+        :jobSummary="$editJobSummary"
         :notes="$editNotes"
         :editingIsInterview="$editingIsInterview"
         :interviewDate="$editInterviewDate"
