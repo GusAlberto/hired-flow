@@ -4,6 +4,7 @@
     'position' => '',
     'city' => '',
     'location' => '',
+    'isLocationRemote' => false,
     'appliedAt' => null,
     'jobUrl' => '',
     'personalScore' => null,
@@ -49,7 +50,17 @@
                         </div>
 
                         <div>
-                            <input type="text" placeholder="Location" wire:model.defer="editLocation" class="w-full border rounded px-3 py-2" />
+                            <label class="mb-2 flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
+                                <span class="text-sm font-medium text-gray-700">Remote location</span>
+                                <input type="checkbox" wire:model.live="isEditLocationRemote" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="{{ $isLocationRemote ? 'Remote' : 'Location' }}"
+                                wire:model.defer="editLocation"
+                                @disabled($isLocationRemote)
+                                class="w-full border rounded px-3 py-2 {{ $isLocationRemote ? 'bg-gray-100 text-gray-500' : '' }}"
+                            />
                             @error('editLocation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 

@@ -25,6 +25,7 @@ class ApplicationsBoard extends Component
     public $position;
     public $city;
     public $location;
+    public $isLocationRemote = false;
     public $applied_at;
     public $job_url;
     public $personal_score;
@@ -41,6 +42,7 @@ class ApplicationsBoard extends Component
     public $editPosition;
     public $editCity;
     public $editLocation;
+    public $isEditLocationRemote = false;
     public $editAppliedAt;
     public $editJobUrl;
     public $editPersonalScore;
@@ -124,6 +126,10 @@ class ApplicationsBoard extends Component
         $hasSalaryExpectedColumn = $this->hasSalaryExpectedColumn();
         $hasJobSummaryColumn = $this->hasJobSummaryColumn();
 
+        if ($this->isLocationRemote) {
+            $this->location = 'remote';
+        }
+
         $data = $this->validate([
             'company' => ['required', 'string', 'max:255'],
             'position' => ['required', 'string', 'max:255'],
@@ -194,6 +200,40 @@ class ApplicationsBoard extends Component
         $this->resetCreateForm();
     }
 
+    public function updatedIsLocationRemote($value): void
+    {
+        if ($value) {
+            $this->location = 'remote';
+            return;
+        }
+
+        if (strtolower((string) $this->location) === 'remote') {
+            $this->location = null;
+        }
+    }
+
+    public function updatedLocation($value): void
+    {
+        $this->isLocationRemote = strtolower(trim((string) $value)) === 'remote';
+    }
+
+    public function updatedIsEditLocationRemote($value): void
+    {
+        if ($value) {
+            $this->editLocation = 'remote';
+            return;
+        }
+
+        if (strtolower((string) $this->editLocation) === 'remote') {
+            $this->editLocation = null;
+        }
+    }
+
+    public function updatedEditLocation($value): void
+    {
+        $this->isEditLocationRemote = strtolower(trim((string) $value)) === 'remote';
+    }
+
     public function editApplication($id)
     {
         $application = Application::where('user_id', Auth::id())->find($id);
@@ -208,6 +248,7 @@ class ApplicationsBoard extends Component
         $this->editPosition = $application->position;
         $this->editCity = $application->city;
         $this->editLocation = $application->location;
+        $this->isEditLocationRemote = strtolower((string) $application->location) === 'remote';
         $this->editAppliedAt = optional($application->applied_at)->format('Y-m-d');
         $this->editJobUrl = $application->job_url;
         $this->editPersonalScore = $application->personal_score;
@@ -240,6 +281,10 @@ class ApplicationsBoard extends Component
         $hasSalaryExpectedColumn = $this->hasSalaryExpectedColumn();
         $hasJobSummaryColumn = $this->hasJobSummaryColumn();
         $hasInterviewFields = $this->hasInterviewFields();
+
+        if ($this->isEditLocationRemote) {
+            $this->editLocation = 'remote';
+        }
 
         $application = Application::where('user_id', Auth::id())
             ->find($this->editingApplicationId);
@@ -444,6 +489,7 @@ class ApplicationsBoard extends Component
             'position',
             'city',
             'location',
+            'isLocationRemote',
             'applied_at',
             'job_url',
             'personal_score',
@@ -464,6 +510,7 @@ class ApplicationsBoard extends Component
             'editPosition',
             'editCity',
             'editLocation',
+            'isEditLocationRemote',
             'editAppliedAt',
             'editJobUrl',
             'editPersonalScore',
