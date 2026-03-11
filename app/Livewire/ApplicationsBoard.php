@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Models\Application;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -20,6 +22,7 @@ class ApplicationsBoard extends Component
 
     public $isCreateFormOpen = false;
     public $showFavoritesOnly = false;
+    public $showArchivedSection = false;
 
     public $company;
     public $position;
@@ -28,6 +31,8 @@ class ApplicationsBoard extends Component
     public $applied_at;
     public $job_url;
     public $personal_score;
+    public $salary_offered;
+    public $salary_expected;
 
     public $editingApplicationId = null;
     public $isEditModalOpen = false;
@@ -41,6 +46,8 @@ class ApplicationsBoard extends Component
     public $editAppliedAt;
     public $editJobUrl;
     public $editPersonalScore;
+    public $editSalaryOffered;
+    public $editSalaryExpected;
     public $editNotes;
     public $editInterviewDate;
     public $editInterviewTime;
@@ -77,6 +84,16 @@ class ApplicationsBoard extends Component
         return Schema::hasColumn('applications', 'personal_score');
     }
 
+    protected function hasSalaryOfferedColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'salary_offered');
+    }
+
+    protected function hasSalaryExpectedColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'salary_expected');
+    }
+
     protected function hasFavoriteColumn(): bool
     {
         return Schema::hasColumn('applications', 'is_favorite');
@@ -94,11 +111,49 @@ class ApplicationsBoard extends Component
         ]);
     }
 
+    protected function getArchiveAfterDays(): int
+    {
+        $configuredDays = (int) (Auth::user()?->archive_after_days ?: 30);
+
+        return max(1, min(365, $configuredDays));
+    }
+
+    protected function archiveExpiredApplications(bool $hasStageColumn): void
+    {
+        $userId = Auth::id();
+        $cacheKey = "archive_sweep_{$userId}";
+
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+
+        $thresholdDate = Carbon::today()->subDays($this->getArchiveAfterDays());
+
+        $query = Application::query()
+            ->where('user_id', $userId)
+            // Archive only after the configured amount of full days has passed.
+            ->whereDate('applied_at', '<', $thresholdDate)
+            ->where('status', '!=', 'archived');
+
+        $updateData = ['status' => 'archived'];
+
+        if ($hasStageColumn) {
+            $updateData['stage'] = 'archived';
+        }
+
+        $query->update($updateData);
+
+        // Flag expira à meia-noite — varredura roda no máximo 1x por dia
+        Cache::put($cacheKey, true, Carbon::now()->secondsUntilEndOfDay());
+    }
+
     public function saveApplication()
     {
         $hasCityColumn = $this->hasCityColumn();
         $hasLocationColumn = $this->hasLocationColumn();
         $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
+        $hasSalaryOfferedColumn = $this->hasSalaryOfferedColumn();
+        $hasSalaryExpectedColumn = $this->hasSalaryExpectedColumn();
 
         $data = $this->validate([
             'company' => ['required', 'string', 'max:255'],
@@ -108,6 +163,8 @@ class ApplicationsBoard extends Component
             'applied_at' => ['required', 'date'],
             'job_url' => ['nullable', 'string', 'max:255'],
             'personal_score' => ['nullable', 'integer', 'between:0,10'],
+            'salary_offered' => ['nullable', 'numeric', 'min:0'],
+            'salary_expected' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $createData = [
@@ -127,6 +184,14 @@ class ApplicationsBoard extends Component
 
         if ($hasPersonalScoreColumn) {
             $createData['personal_score'] = $data['personal_score'] ?? null;
+        }
+
+        if ($hasSalaryOfferedColumn) {
+            $createData['salary_offered'] = $data['salary_offered'] ?? null;
+        }
+
+        if ($hasSalaryExpectedColumn) {
+            $createData['salary_expected'] = $data['salary_expected'] ?? null;
         }
 
         if ($this->hasFavoriteColumn()) {
@@ -172,6 +237,8 @@ class ApplicationsBoard extends Component
         $this->editAppliedAt = optional($application->applied_at)->format('Y-m-d');
         $this->editJobUrl = $application->job_url;
         $this->editPersonalScore = $application->personal_score;
+        $this->editSalaryOffered = $application->salary_offered;
+        $this->editSalaryExpected = $application->salary_expected;
         $this->editNotes = $application->notes;
         $this->editingIsInterview = ($application->stage ?? $application->status) === 'interview';
 
@@ -194,6 +261,8 @@ class ApplicationsBoard extends Component
         $hasCityColumn = $this->hasCityColumn();
         $hasLocationColumn = $this->hasLocationColumn();
         $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
+        $hasSalaryOfferedColumn = $this->hasSalaryOfferedColumn();
+        $hasSalaryExpectedColumn = $this->hasSalaryExpectedColumn();
         $hasInterviewFields = $this->hasInterviewFields();
 
         $application = Application::where('user_id', Auth::id())
@@ -211,6 +280,8 @@ class ApplicationsBoard extends Component
             'editAppliedAt' => ['required', 'date'],
             'editJobUrl' => ['nullable', 'string', 'max:255'],
             'editPersonalScore' => ['nullable', 'integer', 'between:0,10'],
+            'editSalaryOffered' => ['nullable', 'numeric', 'min:0'],
+            'editSalaryExpected' => ['nullable', 'numeric', 'min:0'],
             'editNotes' => ['nullable', 'string'],
             'editInterviewDate' => [$this->editingIsInterview ? 'required' : 'nullable', 'date'],
             'editInterviewTime' => [$this->editingIsInterview ? 'required' : 'nullable'],
@@ -238,6 +309,14 @@ class ApplicationsBoard extends Component
 
         if ($hasPersonalScoreColumn) {
             $updateData['personal_score'] = $data['editPersonalScore'] ?? null;
+        }
+
+        if ($hasSalaryOfferedColumn) {
+            $updateData['salary_offered'] = $data['editSalaryOffered'] ?? null;
+        }
+
+        if ($hasSalaryExpectedColumn) {
+            $updateData['salary_expected'] = $data['editSalaryExpected'] ?? null;
         }
 
         if ($hasInterviewFields) {
@@ -281,8 +360,12 @@ class ApplicationsBoard extends Component
     }
 
     #[On('prepareInterviewMove')]
-    public function prepareInterviewMove($id)
+    public function prepareInterviewMove($id = null)
     {
+        if (!$id) {
+            return;
+        }
+
         $application = Application::where('user_id', Auth::id())->find($id);
 
         if (!$application) {
@@ -376,6 +459,11 @@ class ApplicationsBoard extends Component
         $this->showFavoritesOnly = false;
     }
 
+    public function toggleArchivedSection()
+    {
+        $this->showArchivedSection = !$this->showArchivedSection;
+    }
+
     protected function resetCreateForm()
     {
         $this->reset([
@@ -387,6 +475,8 @@ class ApplicationsBoard extends Component
             'applied_at',
             'job_url',
             'personal_score',
+            'salary_offered',
+            'salary_expected',
         ]);
 
         $this->resetValidation();
@@ -404,6 +494,8 @@ class ApplicationsBoard extends Component
             'editAppliedAt',
             'editJobUrl',
             'editPersonalScore',
+            'editSalaryOffered',
+            'editSalaryExpected',
             'editNotes',
             'editInterviewDate',
             'editInterviewTime',
@@ -441,20 +533,28 @@ class ApplicationsBoard extends Component
         $hasStageColumn = $this->hasStageColumn();
         $hasFavoriteColumn = $this->hasFavoriteColumn();
 
+        $this->archiveExpiredApplications($hasStageColumn);
+
         $apps = Application::where('user_id', Auth::id())
             ->latest('updated_at')
             ->get();
 
+        $statusField = $hasStageColumn ? 'stage' : 'status';
+
+        $archived = $apps->where($statusField, 'archived');
+
+        $activeApps = $apps->where($statusField, '!=', 'archived');
+
         $favoritesCount = $hasFavoriteColumn
-            ? $apps->where('is_favorite', true)->count()
+            ? $activeApps->where('is_favorite', true)->count()
             : 0;
 
         if ($this->showFavoritesOnly && $hasFavoriteColumn) {
-            $apps = $apps->where('is_favorite', true);
+            $activeApps = $activeApps->where('is_favorite', true);
         }
 
         if ($hasStageColumn) {
-            $apps->each(function (Application $application) {
+            $activeApps->each(function (Application $application) {
                 $stage = $application->stage;
 
                 if (!$stage) {
@@ -469,23 +569,25 @@ class ApplicationsBoard extends Component
             });
         }
 
-        $total = $apps->count();
+        $total = $activeApps->count();
 
-        $interviews = $apps->where($hasStageColumn ? 'stage' : 'status', 'interview')->count();
+        $interviews = $activeApps->where($statusField, 'interview')->count();
 
-        $offers = $apps->where($hasStageColumn ? 'stage' : 'status', 'offer')->count();
+        $offers = $activeApps->where($statusField, 'offer')->count();
 
         return view('livewire.applications-board', [
 
-            'applied' => $apps->where($hasStageColumn ? 'stage' : 'status', 'applied'),
+            'applied' => $activeApps->where($statusField, 'applied'),
 
-            'waiting' => $apps->where($hasStageColumn ? 'stage' : 'status', 'waiting'),
+            'waiting' => $activeApps->where($statusField, 'waiting'),
 
-            'interview' => $apps->where($hasStageColumn ? 'stage' : 'status', 'interview'),
+            'interview' => $activeApps->where($statusField, 'interview'),
 
-            'rejected' => $apps->where($hasStageColumn ? 'stage' : 'status', 'rejected'),
+            'rejected' => $activeApps->where($statusField, 'rejected'),
 
-            'offer' => $apps->where($hasStageColumn ? 'stage' : 'status', 'offer'),
+            'offer' => $activeApps->where($statusField, 'offer'),
+
+            'archived' => $archived,
 
             'total' => $total,
 
@@ -493,9 +595,13 @@ class ApplicationsBoard extends Component
 
             'offers' => $offers,
 
+            'archivedCount' => $archived->count(),
+
             'favorites' => $favoritesCount,
 
             'showFavoritesOnly' => $this->showFavoritesOnly,
+
+            'showArchivedSection' => $this->showArchivedSection,
 
             'hasFavoriteColumn' => $hasFavoriteColumn,
 
@@ -503,8 +609,12 @@ class ApplicationsBoard extends Component
     }
 
     #[On('moveApplication')]
-    public function moveApplication($id, $status)
+    public function moveApplication($id = null, $status = null)
     {
+        if (!$id || !$status) {
+            return;
+        }
+
         $hasStageColumn = $this->hasStageColumn();
 
         $app = Application::find($id);
