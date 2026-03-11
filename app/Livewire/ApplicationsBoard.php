@@ -2,16 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Concerns\DetectsApplicationColumns;
 use App\Models\Application;
-use Carbon\Carbon;
+use App\Services\ApplicationService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ApplicationsBoard extends Component
 {
+    use DetectsApplicationColumns;
+
     public const LEGACY_STAGE_MAP = [
         'aplicada' => 'applied',
         'aguardando' => 'waiting',
@@ -64,309 +65,112 @@ class ApplicationsBoard extends Component
     public $interviewPlatform;
     public $interviewAddress;
 
-    protected function hasStageColumn(): bool
+    protected ApplicationService $service;
+
+    /** Inject the service via Livewire's boot hook (not serialised between requests). */
+    public function boot(ApplicationService $service): void
     {
-        return Schema::hasColumn('applications', 'stage');
+        $this->service = $service;
     }
 
-    protected function hasCityColumn(): bool
-    {
-        return Schema::hasColumn('applications', 'city');
-    }
+    // =========================================================================
+    // Create
+    // =========================================================================
 
-    protected function hasLocationColumn(): bool
-    {
-        return Schema::hasColumn('applications', 'location');
-    }
-
-    protected function hasPersonalScoreColumn(): bool
-    {
-        return Schema::hasColumn('applications', 'personal_score');
-    }
-
-    protected function hasSalaryOfferedColumn(): bool
-    {
-        return Schema::hasColumn('applications', 'salary_offered');
-    }
-
-    protected function hasSalaryExpectedColumn(): bool
-    {
-        return Schema::hasColumn('applications', 'salary_expected');
-    }
-
-    protected function hasFavoriteColumn(): bool
-    {
-        return Schema::hasColumn('applications', 'is_favorite');
-    }
-
-    protected function hasInterviewFields(): bool
-    {
-        return Schema::hasColumns('applications', [
-            'interview_date',
-            'interview_time',
-            'interview_location',
-            'interview_is_remote',
-            'interview_platform',
-            'interview_address',
-        ]);
-    }
-
-    protected function getArchiveAfterDays(): int
-    {
-        $configuredDays = (int) (Auth::user()?->archive_after_days ?: 30);
-
-        return max(1, min(365, $configuredDays));
-    }
-
-    protected function archiveExpiredApplications(bool $hasStageColumn): void
-    {
-        $userId = Auth::id();
-        $cacheKey = "archive_sweep_{$userId}";
-
-        if (Cache::has($cacheKey)) {
-            return;
-        }
-
-        $thresholdDate = Carbon::today()->subDays($this->getArchiveAfterDays());
-
-        $query = Application::query()
-            ->where('user_id', $userId)
-            // Archive only after the configured amount of full days has passed.
-            ->whereDate('applied_at', '<', $thresholdDate)
-            ->where('status', '!=', 'archived');
-
-        $updateData = ['status' => 'archived'];
-
-        if ($hasStageColumn) {
-            $updateData['stage'] = 'archived';
-        }
-
-        $query->update($updateData);
-
-        // Flag expira à meia-noite — varredura roda no máximo 1x por dia
-        Cache::put($cacheKey, true, Carbon::now()->secondsUntilEndOfDay());
-    }
-
-    public function saveApplication()
-    {
-        $hasCityColumn = $this->hasCityColumn();
-        $hasLocationColumn = $this->hasLocationColumn();
-        $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
-        $hasSalaryOfferedColumn = $this->hasSalaryOfferedColumn();
-        $hasSalaryExpectedColumn = $this->hasSalaryExpectedColumn();
-
-        $data = $this->validate([
-            'company' => ['required', 'string', 'max:255'],
-            'position' => ['required', 'string', 'max:255'],
-            'city' => [$hasCityColumn ? 'required' : 'nullable', 'string', 'max:255'],
-            'location' => [$hasLocationColumn ? 'required' : 'nullable', 'string', 'max:255'],
-            'applied_at' => ['required', 'date'],
-            'job_url' => ['nullable', 'string', 'max:255'],
-            'personal_score' => ['nullable', 'integer', 'between:0,10'],
-            'salary_offered' => ['nullable', 'numeric', 'min:0'],
-            'salary_expected' => ['nullable', 'numeric', 'min:0'],
-        ]);
-
-        $createData = [
-            'company' => $data['company'],
-            'position' => $data['position'],
-            'applied_at' => $data['applied_at'],
-            'job_url' => $data['job_url'] ?? null,
-        ];
-
-        if ($hasCityColumn) {
-            $createData['city'] = $data['city'] ?? null;
-        }
-
-        if ($hasLocationColumn) {
-            $createData['location'] = $data['location'] ?? null;
-        }
-
-        if ($hasPersonalScoreColumn) {
-            $createData['personal_score'] = $data['personal_score'] ?? null;
-        }
-
-        if ($hasSalaryOfferedColumn) {
-            $createData['salary_offered'] = $data['salary_offered'] ?? null;
-        }
-
-        if ($hasSalaryExpectedColumn) {
-            $createData['salary_expected'] = $data['salary_expected'] ?? null;
-        }
-
-        if ($this->hasFavoriteColumn()) {
-            $createData['is_favorite'] = false;
-        }
-
-        Application::create([
-            ...$createData,
-            'user_id' => Auth::id(),
-            ...($this->hasStageColumn() ? ['stage' => 'applied'] : []),
-            'status' => 'applied',
-        ]);
-
-        session()->flash('status', 'Application created successfully.');
-        $this->resetCreateForm();
-    }
-
-    public function openCreateForm()
+    public function openCreateForm(): void
     {
         $this->resetCreateForm();
         $this->isCreateFormOpen = true;
     }
 
-    public function closeCreateForm()
+    public function closeCreateForm(): void
     {
         $this->resetCreateForm();
     }
 
-    public function editApplication($id)
+    public function saveApplication(): void
     {
-        $application = Application::where('user_id', Auth::id())->find($id);
+        $data = $this->validate($this->createValidationRules());
+
+        $this->service->create($data);
+
+        session()->flash('status', 'Application created successfully.');
+        $this->resetCreateForm();
+    }
+
+    // =========================================================================
+    // Edit
+    // =========================================================================
+
+    public function editApplication(int $id): void
+    {
+        $application = $this->service->findForUser($id, Auth::id());
 
         if (!$application) {
             return;
         }
 
-        $this->editingApplicationId = $application->id;
-        $this->isEditModalOpen = true;
-        $this->editCompany = $application->company;
-        $this->editPosition = $application->position;
-        $this->editCity = $application->city;
-        $this->editLocation = $application->location;
-        $this->editAppliedAt = optional($application->applied_at)->format('Y-m-d');
-        $this->editJobUrl = $application->job_url;
-        $this->editPersonalScore = $application->personal_score;
-        $this->editSalaryOffered = $application->salary_offered;
-        $this->editSalaryExpected = $application->salary_expected;
-        $this->editNotes = $application->notes;
-        $this->editingIsInterview = ($application->stage ?? $application->status) === 'interview';
-
-        if ($this->hasInterviewFields()) {
-            $this->editInterviewDate = $application->interview_date?->format('Y-m-d');
-            $this->editInterviewTime = $application->interview_time;
-            $this->editInterviewLocation = $application->interview_location;
-            $this->editInterviewIsRemote = (bool) $application->interview_is_remote;
-            $this->editInterviewPlatform = $application->interview_platform;
-            $this->editInterviewAddress = $application->interview_address;
-        }
+        $this->fillEditForm($application);
     }
 
-    public function updateApplication()
+    public function updateApplication(): void
     {
         if (!$this->editingApplicationId) {
             return;
         }
 
-        $hasCityColumn = $this->hasCityColumn();
-        $hasLocationColumn = $this->hasLocationColumn();
-        $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
-        $hasSalaryOfferedColumn = $this->hasSalaryOfferedColumn();
-        $hasSalaryExpectedColumn = $this->hasSalaryExpectedColumn();
-        $hasInterviewFields = $this->hasInterviewFields();
-
-        $application = Application::where('user_id', Auth::id())
-            ->find($this->editingApplicationId);
+        $application = $this->service->findForUser($this->editingApplicationId, Auth::id());
 
         if (!$application) {
             return;
         }
 
-        $data = $this->validate([
-            'editCompany' => ['required', 'string', 'max:255'],
-            'editPosition' => ['required', 'string', 'max:255'],
-            'editCity' => [$hasCityColumn ? 'required' : 'nullable', 'string', 'max:255'],
-            'editLocation' => [$hasLocationColumn ? 'required' : 'nullable', 'string', 'max:255'],
-            'editAppliedAt' => ['required', 'date'],
-            'editJobUrl' => ['nullable', 'string', 'max:255'],
-            'editPersonalScore' => ['nullable', 'integer', 'between:0,10'],
-            'editSalaryOffered' => ['nullable', 'numeric', 'min:0'],
-            'editSalaryExpected' => ['nullable', 'numeric', 'min:0'],
-            'editNotes' => ['nullable', 'string'],
-            'editInterviewDate' => [$this->editingIsInterview ? 'required' : 'nullable', 'date'],
-            'editInterviewTime' => [$this->editingIsInterview ? 'required' : 'nullable'],
-            'editInterviewLocation' => ['nullable', 'string', 'max:255'],
-            'editInterviewIsRemote' => ['boolean'],
-            'editInterviewPlatform' => ['nullable', 'string', 'max:255'],
-            'editInterviewAddress' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $this->validate($this->updateValidationRules());
 
-        $updateData = [
-            'company' => $data['editCompany'],
-            'position' => $data['editPosition'],
-            'applied_at' => $data['editAppliedAt'],
-            'job_url' => $data['editJobUrl'],
-            'notes' => $data['editNotes'],
-        ];
-
-        if ($hasCityColumn) {
-            $updateData['city'] = $data['editCity'] ?? null;
-        }
-
-        if ($hasLocationColumn) {
-            $updateData['location'] = $data['editLocation'] ?? null;
-        }
-
-        if ($hasPersonalScoreColumn) {
-            $updateData['personal_score'] = $data['editPersonalScore'] ?? null;
-        }
-
-        if ($hasSalaryOfferedColumn) {
-            $updateData['salary_offered'] = $data['editSalaryOffered'] ?? null;
-        }
-
-        if ($hasSalaryExpectedColumn) {
-            $updateData['salary_expected'] = $data['editSalaryExpected'] ?? null;
-        }
-
-        if ($hasInterviewFields) {
-            $updateData['interview_date'] = $this->editingIsInterview ? ($data['editInterviewDate'] ?? null) : null;
-            $updateData['interview_time'] = $this->editingIsInterview ? ($data['editInterviewTime'] ?? null) : null;
-            $updateData['interview_location'] = $this->editingIsInterview ? ($data['editInterviewLocation'] ?? null) : null;
-            $updateData['interview_is_remote'] = $this->editingIsInterview ? (bool) ($data['editInterviewIsRemote'] ?? false) : false;
-            $updateData['interview_platform'] = $this->editingIsInterview && ($data['editInterviewIsRemote'] ?? false)
-                ? ($data['editInterviewPlatform'] ?? null)
-                : null;
-            $updateData['interview_address'] = $this->editingIsInterview && !($data['editInterviewIsRemote'] ?? false)
-                ? ($data['editInterviewAddress'] ?? null)
-                : null;
-        }
-
-        $application->update($updateData);
+        $this->service->update($application, $this->mapEditFormToServiceData($data));
 
         session()->flash('status', 'Application updated successfully.');
         $this->closeEditModal();
     }
 
-    public function deleteApplication($id)
+    public function closeEditModal(): void
     {
-        $application = Application::where('user_id', Auth::id())->find($id);
+        $this->resetEditForm();
+    }
+
+    // =========================================================================
+    // Delete
+    // =========================================================================
+
+    public function deleteApplication(int $id): void
+    {
+        $application = $this->service->findForUser($id, Auth::id());
 
         if (!$application) {
             return;
         }
 
-        $application->delete();
+        $this->service->delete($application);
+
         session()->flash('status', 'Application deleted successfully.');
 
-        if ($this->editingApplicationId === (int) $id) {
+        if ($this->editingApplicationId === $id) {
             $this->closeEditModal();
         }
     }
 
-    public function closeEditModal()
-    {
-        $this->resetEditForm();
-    }
+    // =========================================================================
+    // Interview scheduling
+    // =========================================================================
 
     #[On('prepareInterviewMove')]
-    public function prepareInterviewMove($id = null)
+    public function prepareInterviewMove(?int $id = null): void
     {
         if (!$id) {
             return;
         }
 
-        $application = Application::where('user_id', Auth::id())->find($id);
+        $application = $this->service->findForUser($id, Auth::id());
 
         if (!$application) {
             return;
@@ -374,275 +178,329 @@ class ApplicationsBoard extends Component
 
         $this->pendingInterviewApplicationId = $application->id;
         $this->isInterviewModalOpen = true;
-
-        if ($this->hasInterviewFields()) {
-            $this->interviewDate = $application->interview_date?->format('Y-m-d');
-            $this->interviewTime = $application->interview_time;
-            $this->interviewLocation = $application->interview_location;
-            $this->interviewIsRemote = (bool) $application->interview_is_remote;
-            $this->interviewPlatform = $application->interview_platform;
-            $this->interviewAddress = $application->interview_address;
-        }
+        $this->fillInterviewForm($application);
     }
 
-    public function closeInterviewModal()
-    {
-        $this->resetInterviewForm();
-    }
-
-    public function saveInterviewMove()
+    public function saveInterviewMove(): void
     {
         if (!$this->pendingInterviewApplicationId) {
             return;
         }
 
-        $application = Application::where('user_id', Auth::id())
-            ->find($this->pendingInterviewApplicationId);
+        $application = $this->service->findForUser($this->pendingInterviewApplicationId, Auth::id());
 
         if (!$application) {
             return;
         }
 
-        $data = $this->validate([
-            'interviewDate' => ['required', 'date'],
-            'interviewTime' => ['required'],
-            'interviewLocation' => ['nullable', 'string', 'max:255'],
-            'interviewIsRemote' => ['boolean'],
-            'interviewPlatform' => ['nullable', 'string', 'max:255'],
-            'interviewAddress' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $this->validate($this->interviewValidationRules());
 
-        if ($this->hasStageColumn()) {
-            $application->stage = 'interview';
-        }
-
-        $application->status = 'interview';
-
-        if ($this->hasInterviewFields()) {
-            $application->interview_date = $data['interviewDate'];
-            $application->interview_time = $data['interviewTime'];
-            $application->interview_location = $data['interviewLocation'] ?? null;
-            $application->interview_is_remote = (bool) $data['interviewIsRemote'];
-            $application->interview_platform = $data['interviewIsRemote'] ? ($data['interviewPlatform'] ?? null) : null;
-            $application->interview_address = $data['interviewIsRemote'] ? null : ($data['interviewAddress'] ?? null);
-        }
-
-        $application->save();
+        $this->service->scheduleInterview($application, $this->mapInterviewFormToServiceData($data));
 
         session()->flash('status', 'Interview scheduled successfully.');
         $this->resetInterviewForm();
     }
 
-    public function toggleFavorite($id)
+    public function closeInterviewModal(): void
     {
-        if (!$this->hasFavoriteColumn()) {
-            return;
-        }
-
-        $application = Application::where('user_id', Auth::id())->find($id);
-
-        if (!$application) {
-            return;
-        }
-
-        $application->is_favorite = !$application->is_favorite;
-        $application->save();
+        $this->resetInterviewForm();
     }
 
-    public function toggleFavoritesFilter()
-    {
-        $this->showFavoritesOnly = !$this->showFavoritesOnly;
-    }
-
-    public function clearFavoritesFilter()
-    {
-        $this->showFavoritesOnly = false;
-    }
-
-    public function toggleArchivedSection()
-    {
-        $this->showArchivedSection = !$this->showArchivedSection;
-    }
-
-    protected function resetCreateForm()
-    {
-        $this->reset([
-            'isCreateFormOpen',
-            'company',
-            'position',
-            'city',
-            'location',
-            'applied_at',
-            'job_url',
-            'personal_score',
-            'salary_offered',
-            'salary_expected',
-        ]);
-
-        $this->resetValidation();
-    }
-
-    protected function resetEditForm()
-    {
-        $this->reset([
-            'editingApplicationId',
-            'isEditModalOpen',
-            'editCompany',
-            'editPosition',
-            'editCity',
-            'editLocation',
-            'editAppliedAt',
-            'editJobUrl',
-            'editPersonalScore',
-            'editSalaryOffered',
-            'editSalaryExpected',
-            'editNotes',
-            'editInterviewDate',
-            'editInterviewTime',
-            'editInterviewLocation',
-            'editInterviewIsRemote',
-            'editInterviewPlatform',
-            'editInterviewAddress',
-            'editingIsInterview',
-        ]);
-
-        $this->editInterviewIsRemote = false;
-
-        $this->resetValidation();
-    }
-
-    protected function resetInterviewForm()
-    {
-        $this->reset([
-            'isInterviewModalOpen',
-            'pendingInterviewApplicationId',
-            'interviewDate',
-            'interviewTime',
-            'interviewLocation',
-            'interviewIsRemote',
-            'interviewPlatform',
-            'interviewAddress',
-        ]);
-
-        $this->interviewIsRemote = false;
-        $this->resetValidation();
-    }
-
-    public function render()
-    {
-        $hasStageColumn = $this->hasStageColumn();
-        $hasFavoriteColumn = $this->hasFavoriteColumn();
-
-        $this->archiveExpiredApplications($hasStageColumn);
-
-        $apps = Application::where('user_id', Auth::id())
-            ->latest('updated_at')
-            ->get();
-
-        $statusField = $hasStageColumn ? 'stage' : 'status';
-
-        $archived = $apps->where($statusField, 'archived');
-
-        $activeApps = $apps->where($statusField, '!=', 'archived');
-
-        $favoritesCount = $hasFavoriteColumn
-            ? $activeApps->where('is_favorite', true)->count()
-            : 0;
-
-        if ($this->showFavoritesOnly && $hasFavoriteColumn) {
-            $activeApps = $activeApps->where('is_favorite', true);
-        }
-
-        if ($hasStageColumn) {
-            $activeApps->each(function (Application $application) {
-                $stage = $application->stage;
-
-                if (!$stage) {
-                    $application->stage = $application->status ?: 'applied';
-                    return;
-                }
-
-                // Keep backward compatibility with legacy Portuguese stage values.
-                if (isset(self::LEGACY_STAGE_MAP[$stage])) {
-                    $application->stage = self::LEGACY_STAGE_MAP[$stage];
-                }
-            });
-        }
-
-        $total = $activeApps->count();
-
-        $interviews = $activeApps->where($statusField, 'interview')->count();
-
-        $offers = $activeApps->where($statusField, 'offer')->count();
-
-        return view('livewire.applications-board', [
-
-            'applied' => $activeApps->where($statusField, 'applied'),
-
-            'waiting' => $activeApps->where($statusField, 'waiting'),
-
-            'interview' => $activeApps->where($statusField, 'interview'),
-
-            'rejected' => $activeApps->where($statusField, 'rejected'),
-
-            'offer' => $activeApps->where($statusField, 'offer'),
-
-            'archived' => $archived,
-
-            'total' => $total,
-
-            'interviews' => $interviews,
-
-            'offers' => $offers,
-
-            'archivedCount' => $archived->count(),
-
-            'favorites' => $favoritesCount,
-
-            'showFavoritesOnly' => $this->showFavoritesOnly,
-
-            'showArchivedSection' => $this->showArchivedSection,
-
-            'hasFavoriteColumn' => $hasFavoriteColumn,
-
-        ]);
-    }
+    // =========================================================================
+    // Kanban drag-and-drop
+    // =========================================================================
 
     #[On('moveApplication')]
-    public function moveApplication($id = null, $status = null)
+    public function moveApplication(?int $id = null, ?string $status = null): void
     {
         if (!$id || !$status) {
             return;
         }
 
-        $hasStageColumn = $this->hasStageColumn();
+        $application = $this->service->findForUser($id, Auth::id());
 
-        $app = Application::find($id);
-
-        if (!$app) {
+        if (!$application) {
             return;
         }
 
-        if ($app->user_id != Auth::id()) {
-            return;
-        }
-
-        // Accept either the new english values or legacy portuguese ones.
-        if (isset(self::LEGACY_STAGE_MAP[$status])) {
-            $status = self::LEGACY_STAGE_MAP[$status];
-        }
+        // Normalise legacy Portuguese stage values to English.
+        $status = self::LEGACY_STAGE_MAP[$status] ?? $status;
 
         if (!in_array($status, ['applied', 'waiting', 'interview', 'rejected', 'offer'], true)) {
             return;
         }
 
-        if ($hasStageColumn) {
-            $app->stage = $status;
-        }
-
-        $app->status = $status;
-        $app->save();
+        $this->service->move($application, $status);
 
         session()->flash('status', 'Application moved successfully.');
+    }
+
+    // =========================================================================
+    // Favourites
+    // =========================================================================
+
+    public function toggleFavorite(int $id): void
+    {
+        $application = $this->service->findForUser($id, Auth::id());
+
+        if (!$application) {
+            return;
+        }
+
+        $this->service->toggleFavorite($application);
+    }
+
+    public function toggleFavoritesFilter(): void
+    {
+        $this->showFavoritesOnly = !$this->showFavoritesOnly;
+    }
+
+    public function clearFavoritesFilter(): void
+    {
+        $this->showFavoritesOnly = false;
+    }
+
+    // =========================================================================
+    // Archive
+    // =========================================================================
+
+    public function toggleArchivedSection(): void
+    {
+        $this->showArchivedSection = !$this->showArchivedSection;
+    }
+
+    // =========================================================================
+    // Render
+    // =========================================================================
+
+    public function render()
+    {
+        $userId          = Auth::id();
+        $statusField     = $this->hasStageColumn()   ? 'stage' : 'status';
+        $hasFavoriteColumn = $this->hasFavoriteColumn();
+
+        $this->service->archiveExpiredIfDue($userId);
+
+        $apps       = $this->service->allForUser($userId);
+        $archived   = $apps->where($statusField, 'archived');
+        $activeApps = $this->resolveActiveApps($apps, $statusField, $hasFavoriteColumn);
+
+        return view('livewire.applications-board', [
+            'applied'           => $activeApps->where($statusField, 'applied'),
+            'waiting'           => $activeApps->where($statusField, 'waiting'),
+            'interview'         => $activeApps->where($statusField, 'interview'),
+            'rejected'          => $activeApps->where($statusField, 'rejected'),
+            'offer'             => $activeApps->where($statusField, 'offer'),
+            'archived'          => $archived,
+            'total'             => $activeApps->count(),
+            'interviews'        => $activeApps->where($statusField, 'interview')->count(),
+            'offers'            => $activeApps->where($statusField, 'offer')->count(),
+            'archivedCount'     => $archived->count(),
+            'favorites'         => $hasFavoriteColumn ? $activeApps->where('is_favorite', true)->count() : 0,
+            'showFavoritesOnly' => $this->showFavoritesOnly,
+            'showArchivedSection' => $this->showArchivedSection,
+            'hasFavoriteColumn' => $hasFavoriteColumn,
+        ]);
+    }
+
+    // =========================================================================
+    // Private helpers
+    // =========================================================================
+
+    private function resolveActiveApps($apps, string $statusField, bool $hasFavoriteColumn)
+    {
+        $activeApps = $apps->where($statusField, '!=', 'archived');
+
+        if ($this->hasStageColumn()) {
+            $this->normalizeLegacyStages($activeApps);
+        }
+
+        if ($this->showFavoritesOnly && $hasFavoriteColumn) {
+            return $activeApps->where('is_favorite', true);
+        }
+
+        return $activeApps;
+    }
+
+    private function normalizeLegacyStages($applications): void
+    {
+        $applications->each(function (Application $application) {
+            if (!$application->stage) {
+                $application->stage = $application->status ?: 'applied';
+                return;
+            }
+
+            // Translate old Portuguese stage values to their English equivalents.
+            if (isset(self::LEGACY_STAGE_MAP[$application->stage])) {
+                $application->stage = self::LEGACY_STAGE_MAP[$application->stage];
+            }
+        });
+    }
+
+    private function fillEditForm(Application $application): void
+    {
+        $this->editingApplicationId   = $application->id;
+        $this->isEditModalOpen        = true;
+        $this->editCompany            = $application->company;
+        $this->editPosition           = $application->position;
+        $this->editCity               = $application->city;
+        $this->editLocation           = $application->location;
+        $this->editAppliedAt          = optional($application->applied_at)->format('Y-m-d');
+        $this->editJobUrl             = $application->job_url;
+        $this->editPersonalScore      = $application->personal_score;
+        $this->editSalaryOffered      = $application->salary_offered;
+        $this->editSalaryExpected     = $application->salary_expected;
+        $this->editNotes              = $application->notes;
+        $this->editingIsInterview     = ($application->stage ?? $application->status) === 'interview';
+        $this->editInterviewDate      = $application->interview_date?->format('Y-m-d');
+        $this->editInterviewTime      = $application->interview_time;
+        $this->editInterviewLocation  = $application->interview_location;
+        $this->editInterviewIsRemote  = (bool) $application->interview_is_remote;
+        $this->editInterviewPlatform  = $application->interview_platform;
+        $this->editInterviewAddress   = $application->interview_address;
+    }
+
+    private function fillInterviewForm(Application $application): void
+    {
+        $this->interviewDate      = $application->interview_date?->format('Y-m-d');
+        $this->interviewTime      = $application->interview_time;
+        $this->interviewLocation  = $application->interview_location;
+        $this->interviewIsRemote  = (bool) $application->interview_is_remote;
+        $this->interviewPlatform  = $application->interview_platform;
+        $this->interviewAddress   = $application->interview_address;
+    }
+
+    /** Maps validated edit-form fields to the shape expected by UpdateApplication. */
+    private function mapEditFormToServiceData(array $validated): array
+    {
+        return [
+            'company'              => $validated['editCompany'],
+            'position'             => $validated['editPosition'],
+            'city'                 => $validated['editCity']          ?? null,
+            'location'             => $validated['editLocation']      ?? null,
+            'applied_at'           => $validated['editAppliedAt'],
+            'job_url'              => $validated['editJobUrl']        ?? null,
+            'personal_score'       => $validated['editPersonalScore'] ?? null,
+            'salary_offered'       => $validated['editSalaryOffered'] ?? null,
+            'salary_expected'      => $validated['editSalaryExpected'] ?? null,
+            'notes'                => $validated['editNotes']         ?? null,
+            'is_interview'         => $this->editingIsInterview,
+            'interview_date'       => $validated['editInterviewDate']      ?? null,
+            'interview_time'       => $validated['editInterviewTime']      ?? null,
+            'interview_location'   => $validated['editInterviewLocation']  ?? null,
+            'interview_is_remote'  => $validated['editInterviewIsRemote']  ?? false,
+            'interview_platform'   => $validated['editInterviewPlatform']  ?? null,
+            'interview_address'    => $validated['editInterviewAddress']   ?? null,
+        ];
+    }
+
+    /** Maps validated interview-form fields to the shape expected by ScheduleInterview. */
+    private function mapInterviewFormToServiceData(array $validated): array
+    {
+        return [
+            'interview_date'      => $validated['interviewDate'],
+            'interview_time'      => $validated['interviewTime'],
+            'interview_location'  => $validated['interviewLocation'] ?? null,
+            'interview_is_remote' => $validated['interviewIsRemote'] ?? false,
+            'interview_platform'  => $validated['interviewPlatform'] ?? null,
+            'interview_address'   => $validated['interviewAddress']  ?? null,
+        ];
+    }
+
+    // =========================================================================
+    // Validation rules
+    // =========================================================================
+
+    private function createValidationRules(): array
+    {
+        return [
+            'company'          => ['required', 'string', 'max:255'],
+            'position'         => ['required', 'string', 'max:255'],
+            'city'             => [$this->hasCityColumn()     ? 'required' : 'nullable', 'string', 'max:255'],
+            'location'         => [$this->hasLocationColumn() ? 'required' : 'nullable', 'string', 'max:255'],
+            'applied_at'       => ['required', 'date'],
+            'job_url'          => ['nullable', 'string', 'max:255'],
+            'personal_score'   => ['nullable', 'integer', 'between:0,10'],
+            'salary_offered'   => ['nullable', 'numeric', 'min:0'],
+            'salary_expected'  => ['nullable', 'numeric', 'min:0'],
+        ];
+    }
+
+    private function updateValidationRules(): array
+    {
+        return [
+            'editCompany'          => ['required', 'string', 'max:255'],
+            'editPosition'         => ['required', 'string', 'max:255'],
+            'editCity'             => [$this->hasCityColumn()     ? 'required' : 'nullable', 'string', 'max:255'],
+            'editLocation'         => [$this->hasLocationColumn() ? 'required' : 'nullable', 'string', 'max:255'],
+            'editAppliedAt'        => ['required', 'date'],
+            'editJobUrl'           => ['nullable', 'string', 'max:255'],
+            'editPersonalScore'    => ['nullable', 'integer', 'between:0,10'],
+            'editSalaryOffered'    => ['nullable', 'numeric', 'min:0'],
+            'editSalaryExpected'   => ['nullable', 'numeric', 'min:0'],
+            'editNotes'            => ['nullable', 'string'],
+            'editInterviewDate'    => [$this->editingIsInterview ? 'required' : 'nullable', 'date'],
+            'editInterviewTime'    => [$this->editingIsInterview ? 'required' : 'nullable'],
+            'editInterviewLocation'  => ['nullable', 'string', 'max:255'],
+            'editInterviewIsRemote'  => ['boolean'],
+            'editInterviewPlatform'  => ['nullable', 'string', 'max:255'],
+            'editInterviewAddress'   => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    private function interviewValidationRules(): array
+    {
+        return [
+            'interviewDate'      => ['required', 'date'],
+            'interviewTime'      => ['required'],
+            'interviewLocation'  => ['nullable', 'string', 'max:255'],
+            'interviewIsRemote'  => ['boolean'],
+            'interviewPlatform'  => ['nullable', 'string', 'max:255'],
+            'interviewAddress'   => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    // =========================================================================
+    // Form resets
+    // =========================================================================
+
+    protected function resetCreateForm(): void
+    {
+        $this->reset([
+            'isCreateFormOpen',
+            'company', 'position', 'city', 'location',
+            'applied_at', 'job_url', 'personal_score',
+            'salary_offered', 'salary_expected',
+        ]);
+
+        $this->resetValidation();
+    }
+
+    protected function resetEditForm(): void
+    {
+        $this->reset([
+            'editingApplicationId', 'isEditModalOpen',
+            'editCompany', 'editPosition', 'editCity', 'editLocation',
+            'editAppliedAt', 'editJobUrl', 'editPersonalScore',
+            'editSalaryOffered', 'editSalaryExpected', 'editNotes',
+            'editInterviewDate', 'editInterviewTime', 'editInterviewLocation',
+            'editInterviewIsRemote', 'editInterviewPlatform', 'editInterviewAddress',
+            'editingIsInterview',
+        ]);
+
+        $this->editInterviewIsRemote = false;
+        $this->resetValidation();
+    }
+
+    protected function resetInterviewForm(): void
+    {
+        $this->reset([
+            'isInterviewModalOpen', 'pendingInterviewApplicationId',
+            'interviewDate', 'interviewTime', 'interviewLocation',
+            'interviewIsRemote', 'interviewPlatform', 'interviewAddress',
+        ]);
+
+        $this->interviewIsRemote = false;
+        $this->resetValidation();
     }
 }
