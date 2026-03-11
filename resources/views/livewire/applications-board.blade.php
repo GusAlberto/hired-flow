@@ -121,34 +121,45 @@
         :salaryExpected="$salary_expected"
     />
 
-    <div class="mb-4 flex justify-end">
-        <button
-            type="button"
-            wire:click="toggleKanbanOrientation"
-            wire:loading.attr="disabled"
-            wire:loading.class="cursor-not-allowed opacity-60"
-            wire:target="toggleKanbanOrientation"
-            aria-label="Toggle kanban orientation"
-            class="group relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100"
-        >
-            <svg
-                class="h-5 w-5 transition-transform duration-300 ease-out"
-                style="transform: rotate({{ $kanbanOrientation === 'vertical' ? 90 : 0 }}deg)"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
+    <div
+        x-data="kanbanToggleDock(@js($kanbanTogglePosition))"
+        class="mb-4"
+    >
+        <div x-ref="track" class="relative h-10 w-full select-none">
+            <button
+                x-ref="button"
+                type="button"
+                @click="handleClick($event)"
+                @pointerdown="startDrag($event)"
+                @pointermove.window="onDrag($event)"
+                @pointerup.window="endDrag($event)"
+                @pointercancel.window="cancelDrag()"
+                wire:loading.attr="disabled"
+                wire:loading.class="cursor-not-allowed opacity-60"
+                wire:target="toggleKanbanOrientation,setKanbanTogglePosition"
+                aria-label="Toggle kanban orientation"
+                class="group absolute top-0 inline-flex h-10 w-10 touch-none items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition-[left,right,background-color,opacity,transform] duration-200 hover:bg-gray-100"
+                :style="buttonStyle()"
             >
-                <path d="M8 7H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M16 4L19 7L16 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M16 17H5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M8 14L5 17L8 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+                <svg
+                    class="h-5 w-5 transition-transform duration-300 ease-out"
+                    style="transform: rotate({{ $kanbanOrientation === 'vertical' ? 90 : 0 }}deg)"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                >
+                    <path d="M8 7H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M16 4L19 7L16 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M16 17H5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M8 14L5 17L8 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
 
-            <span class="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-                {{ $kanbanOrientation === 'horizontal' ? 'Switch to vertical view' : 'Switch to horizontal view' }}
-            </span>
-        </button>
+                <span class="pointer-events-none absolute left-1/2 top-full z-20 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                    {{ $kanbanOrientation === 'horizontal' ? 'Switch to vertical view' : 'Switch to horizontal view' }}
+                </span>
+            </button>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 gap-6 {{ $kanbanOrientation === 'horizontal' ? 'xl:grid-cols-5' : '' }}">
@@ -353,6 +364,101 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <script>
+    function kanbanToggleDock(initialSide) {
+        return {
+            side: initialSide === 'left' ? 'left' : 'right',
+            dragging: false,
+            didDrag: false,
+            pointerId: null,
+            currentLeft: null,
+            startX: 0,
+
+            buttonStyle() {
+                if (this.currentLeft !== null) {
+                    return `left: ${this.currentLeft}px;`
+                }
+
+                return this.side === 'left' ? 'left: 0px;' : 'right: 0px;'
+            },
+
+            startDrag(event) {
+                this.dragging = true
+                this.didDrag = false
+                this.pointerId = event.pointerId
+                this.startX = event.clientX
+                this.currentLeft = this.side === 'left' ? 0 : this.maxLeft()
+            },
+
+            onDrag(event) {
+                if (!this.dragging || event.pointerId !== this.pointerId) {
+                    return
+                }
+
+                const nextLeft = this.pointerToLeft(event.clientX)
+                this.currentLeft = nextLeft
+                this.didDrag = this.didDrag || Math.abs(event.clientX - this.startX) > 6
+            },
+
+            endDrag(event) {
+                if (!this.dragging || event.pointerId !== this.pointerId) {
+                    return
+                }
+
+                if (this.didDrag) {
+                    const nextSide = this.buttonCenter() < this.trackMidpoint() ? 'left' : 'right'
+                    this.side = nextSide
+                    this.$wire.setKanbanTogglePosition(nextSide)
+                }
+
+                this.dragging = false
+                this.pointerId = null
+                this.currentLeft = null
+            },
+
+            cancelDrag() {
+                this.dragging = false
+                this.pointerId = null
+                this.currentLeft = null
+                this.didDrag = false
+            },
+
+            handleClick(event) {
+                if (this.didDrag) {
+                    event.preventDefault()
+                    this.didDrag = false
+                    return
+                }
+
+                this.$wire.toggleKanbanOrientation()
+            },
+
+            pointerToLeft(clientX) {
+                const trackRect = this.$refs.track.getBoundingClientRect()
+                const halfButton = this.buttonWidth() / 2
+                const rawLeft = clientX - trackRect.left - halfButton
+
+                return Math.min(Math.max(rawLeft, 0), this.maxLeft())
+            },
+
+            buttonCenter() {
+                const left = this.currentLeft ?? (this.side === 'left' ? 0 : this.maxLeft())
+                return left + (this.buttonWidth() / 2)
+            },
+
+            trackMidpoint() {
+                return this.$refs.track.clientWidth / 2
+            },
+
+            buttonWidth() {
+                return this.$refs.button.offsetWidth
+            },
+
+            maxLeft() {
+                return Math.max(this.$refs.track.clientWidth - this.buttonWidth(), 0)
+            },
+        }
+    }
+
     function initSortables() {
         ['applied', 'waiting', 'interview', 'rejected', 'offer'].forEach(status => {
             const el = document.getElementById(status)

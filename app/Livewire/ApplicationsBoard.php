@@ -25,6 +25,7 @@ class ApplicationsBoard extends Component
     public $showFavoritesOnly = false;
     public $showArchivedSection = false;
     public $kanbanOrientation = 'horizontal';
+    public $kanbanTogglePosition = 'right';
 
     public $company;
     public $position;
@@ -74,6 +75,11 @@ class ApplicationsBoard extends Component
         $this->kanbanOrientation = in_array($orientation, ['horizontal', 'vertical'], true)
             ? $orientation
             : 'horizontal';
+
+        $togglePosition = session('kanban_toggle_position', 'right');
+        $this->kanbanTogglePosition = in_array($togglePosition, ['left', 'right'], true)
+            ? $togglePosition
+            : 'right';
     }
 
     /** Inject the service via Livewire's boot hook (not serialised between requests). */
@@ -284,6 +290,16 @@ class ApplicationsBoard extends Component
         session(['kanban_orientation' => $this->kanbanOrientation]);
     }
 
+    public function setKanbanTogglePosition(?string $position = null): void
+    {
+        if (!in_array($position, ['left', 'right'], true)) {
+            return;
+        }
+
+        $this->kanbanTogglePosition = $position;
+        session(['kanban_toggle_position' => $this->kanbanTogglePosition]);
+    }
+
     // =========================================================================
     // Render
     // =========================================================================
@@ -316,6 +332,7 @@ class ApplicationsBoard extends Component
             'showArchivedSection' => $this->showArchivedSection,
             'hasFavoriteColumn' => $hasFavoriteColumn,
             'kanbanOrientation' => $this->kanbanOrientation,
+            'kanbanTogglePosition' => $this->kanbanTogglePosition,
         ]);
     }
 
