@@ -149,7 +149,6 @@
             <button
                 x-ref="button"
                 type="button"
-                @click="handleClick($event)"
                 @pointerdown="startDrag($event)"
                 @pointermove.window="onDrag($event)"
                 @pointerup.window="endDrag($event)"
@@ -169,8 +168,8 @@
                     class="h-5 w-5 transition-transform duration-300 ease-out"
                     style="transform: rotate({{ $kanbanOrientation === 'vertical' ? 90 : 0 }}deg)"
                     viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                            ? 'border-blue-300 shadow-xl ring-4 ring-blue-100 scale-110 opacity-100'
+                            : 'border-gray-300 shadow-md opacity-90 scale-100')
                     aria-hidden="true"
                 >
                     <path d="M8 7H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -283,8 +282,8 @@
                                     class="h-4 w-4 transition-transform duration-200"
                                     :class="expanded ? 'rotate-180' : ''"
                                     viewBox="0 0 20 20"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
+                                            ? 'border-blue-300 shadow-xl ring-4 ring-blue-100 scale-110 opacity-100'
+                                            : 'border-gray-300 shadow-md opacity-90 scale-100')
                                     aria-hidden="true"
                                 >
                                     <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -396,7 +395,10 @@
             pointerId: null,
             currentLeft: null,
             startX: 0,
+            startY: 0,
             grabOffsetX: 0,
+            pressStartedAt: 0,
+            dragThreshold: 8,
 
             buttonStyle() {
                 const left = this.currentLeft ?? this.dockedLeft()
@@ -404,11 +406,13 @@
             },
 
             startDrag(event) {
-                this.dragging = true
+                this.dragging = false
                 this.didDrag = false
                 this.pointerId = event.pointerId
                 this.startX = event.clientX
-                this.currentLeft = this.dockedLeft()
+                this.startY = event.clientY
+                this.pressStartedAt = Date.now()
+                this.currentLeft = null
                 this.grabOffsetX = event.clientX - this.$refs.button.getBoundingClientRect().left
 
                 if (this.$refs.button.setPointerCapture) {
@@ -417,17 +421,30 @@
             },
 
             onDrag(event) {
-                if (!this.dragging || event.pointerId !== this.pointerId) {
+                if (event.pointerId !== this.pointerId) {
                     return
+                }
+
+                const deltaX = event.clientX - this.startX
+                const deltaY = event.clientY - this.startY
+                const distance = Math.hypot(deltaX, deltaY)
+
+                if (!this.dragging && distance <= this.dragThreshold) {
+                    return
+                }
+
+                if (!this.dragging) {
+                    this.dragging = true
+                    this.currentLeft = this.dockedLeft()
                 }
 
                 const nextLeft = this.pointerToLeft(event.clientX)
                 this.currentLeft = nextLeft
-                this.didDrag = this.didDrag || Math.abs(event.clientX - this.startX) > 6
+                this.didDrag = true
             },
 
             endDrag(event) {
-                if (!this.dragging || event.pointerId !== this.pointerId) {
+                if (event.pointerId !== this.pointerId) {
                     return
                 }
 
@@ -435,6 +452,13 @@
                     const nextSide = this.previewSide()
                     this.side = nextSide
                     this.$wire.setKanbanTogglePosition(nextSide)
+                } else {
+                    const pressDuration = Date.now() - this.pressStartedAt
+
+                    // Quick tap toggles orientation. Press-and-hold does not.
+                    if (pressDuration < 220) {
+                        this.$wire.toggleKanbanOrientation()
+                    }
                 }
 
                 if (this.$refs.button.releasePointerCapture && this.$refs.button.hasPointerCapture?.(event.pointerId)) {
@@ -444,7 +468,9 @@
                 this.dragging = false
                 this.pointerId = null
                 this.currentLeft = null
+                this.startY = 0
                 this.grabOffsetX = 0
+                this.pressStartedAt = 0
             },
 
             cancelDrag() {
@@ -455,18 +481,10 @@
                 this.dragging = false
                 this.pointerId = null
                 this.currentLeft = null
+                this.startY = 0
                 this.grabOffsetX = 0
+                this.pressStartedAt = 0
                 this.didDrag = false
-            },
-
-            handleClick(event) {
-                if (this.didDrag) {
-                    event.preventDefault()
-                    this.didDrag = false
-                    return
-                }
-
-                this.$wire.toggleKanbanOrientation()
             },
 
             pointerToLeft(clientX) {
