@@ -110,7 +110,7 @@
 
             <div id="{{ $status }}" class="space-y-3 min-h-24">
                 @foreach ($column['items'] as $app)
-                <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}">
+                <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}" x-data="{ expanded: false }">
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
                             <div class="flex items-center gap-3">
@@ -166,10 +166,31 @@
                             <span class="font-medium">🗺️ Location:</span>
                             {{ $app->location ?: 'Not informed' }}
                         </div>
-                        <div>
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
                             <span class="font-medium">⭐ Personal score:</span>
                             {{ is_null($app->personal_score) ? 'Not rated' : $app->personal_score . '/10' }}
+                            </div>
+                            <button
+                                type="button"
+                                @click="expanded = !expanded"
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                                :aria-expanded="expanded"
+                                aria-label="Toggle job details"
+                                title="Show more details"
+                            >
+                                <span class="text-base transition-transform duration-200" :class="expanded ? 'rotate-180' : ''">⌄</span>
+                            </button>
                         </div>
+
+                        @if ($app->job_summary)
+                        <div>
+                            <span class="font-medium">📌 Job summary:</span>
+                            {{ \Illuminate\Support\Str::limit($app->job_summary, 100) }}
+                        </div>
+                        @endif
+
+                        <div x-show="expanded" x-transition.opacity.duration.150ms class="space-y-2 border-t border-gray-200 pt-2">
                         <div>
                             <span class="font-medium">💼 Company budget:</span>
                             {{ is_null($app->salary_offered) ? 'Not informed' : 'R$ ' . number_format((float) $app->salary_offered, 2, ',', '.') }}
@@ -222,6 +243,7 @@
                             {{ $app->notes }}
                         </div>
                         @endif
+                        </div>
                     </div>
                 </article>
                 @endforeach
