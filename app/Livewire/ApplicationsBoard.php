@@ -31,6 +31,8 @@ class ApplicationsBoard extends Component
 
     public $editingApplicationId = null;
     public $isEditModalOpen = false;
+    public $isInterviewModalOpen = false;
+    public $pendingInterviewApplicationId = null;
 
     public $editCompany;
     public $editPosition;
@@ -40,6 +42,20 @@ class ApplicationsBoard extends Component
     public $editJobUrl;
     public $editPersonalScore;
     public $editNotes;
+    public $editInterviewDate;
+    public $editInterviewTime;
+    public $editInterviewLocation;
+    public $editInterviewIsRemote = false;
+    public $editInterviewPlatform;
+    public $editInterviewAddress;
+    public $editingIsInterview = false;
+
+    public $interviewDate;
+    public $interviewTime;
+    public $interviewLocation;
+    public $interviewIsRemote = false;
+    public $interviewPlatform;
+    public $interviewAddress;
 
     protected function hasStageColumn(): bool
     {
@@ -64,6 +80,18 @@ class ApplicationsBoard extends Component
     protected function hasFavoriteColumn(): bool
     {
         return Schema::hasColumn('applications', 'is_favorite');
+    }
+
+    protected function hasInterviewFields(): bool
+    {
+        return Schema::hasColumns('applications', [
+            'interview_date',
+            'interview_time',
+            'interview_location',
+            'interview_is_remote',
+            'interview_platform',
+            'interview_address',
+        ]);
     }
 
     public function saveApplication()
@@ -145,6 +173,16 @@ class ApplicationsBoard extends Component
         $this->editJobUrl = $application->job_url;
         $this->editPersonalScore = $application->personal_score;
         $this->editNotes = $application->notes;
+        $this->editingIsInterview = ($application->stage ?? $application->status) === 'interview';
+
+        if ($this->hasInterviewFields()) {
+            $this->editInterviewDate = $application->interview_date?->format('Y-m-d');
+            $this->editInterviewTime = $application->interview_time;
+            $this->editInterviewLocation = $application->interview_location;
+            $this->editInterviewIsRemote = (bool) $application->interview_is_remote;
+            $this->editInterviewPlatform = $application->interview_platform;
+            $this->editInterviewAddress = $application->interview_address;
+        }
     }
 
     public function updateApplication()
@@ -156,6 +194,7 @@ class ApplicationsBoard extends Component
         $hasCityColumn = $this->hasCityColumn();
         $hasLocationColumn = $this->hasLocationColumn();
         $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
+        $hasInterviewFields = $this->hasInterviewFields();
 
         $application = Application::where('user_id', Auth::id())
             ->find($this->editingApplicationId);
@@ -173,6 +212,12 @@ class ApplicationsBoard extends Component
             'editJobUrl' => ['nullable', 'string', 'max:255'],
             'editPersonalScore' => ['nullable', 'integer', 'between:0,10'],
             'editNotes' => ['nullable', 'string'],
+            'editInterviewDate' => [$this->editingIsInterview ? 'required' : 'nullable', 'date'],
+            'editInterviewTime' => [$this->editingIsInterview ? 'required' : 'nullable'],
+            'editInterviewLocation' => ['nullable', 'string', 'max:255'],
+            'editInterviewIsRemote' => ['boolean'],
+            'editInterviewPlatform' => ['nullable', 'string', 'max:255'],
+            'editInterviewAddress' => ['nullable', 'string', 'max:255'],
         ]);
 
         $updateData = [
@@ -193,6 +238,19 @@ class ApplicationsBoard extends Component
 
         if ($hasPersonalScoreColumn) {
             $updateData['personal_score'] = $data['editPersonalScore'] ?? null;
+        }
+
+        if ($hasInterviewFields) {
+            $updateData['interview_date'] = $this->editingIsInterview ? ($data['editInterviewDate'] ?? null) : null;
+            $updateData['interview_time'] = $this->editingIsInterview ? ($data['editInterviewTime'] ?? null) : null;
+            $updateData['interview_location'] = $this->editingIsInterview ? ($data['editInterviewLocation'] ?? null) : null;
+            $updateData['interview_is_remote'] = $this->editingIsInterview ? (bool) ($data['editInterviewIsRemote'] ?? false) : false;
+            $updateData['interview_platform'] = $this->editingIsInterview && ($data['editInterviewIsRemote'] ?? false)
+                ? ($data['editInterviewPlatform'] ?? null)
+                : null;
+            $updateData['interview_address'] = $this->editingIsInterview && !($data['editInterviewIsRemote'] ?? false)
+                ? ($data['editInterviewAddress'] ?? null)
+                : null;
         }
 
         $application->update($updateData);
@@ -220,6 +278,76 @@ class ApplicationsBoard extends Component
     public function closeEditModal()
     {
         $this->resetEditForm();
+    }
+
+    #[On('prepareInterviewMove')]
+    public function prepareInterviewMove($id)
+    {
+        $application = Application::where('user_id', Auth::id())->find($id);
+
+        if (!$application) {
+            return;
+        }
+
+        $this->pendingInterviewApplicationId = $application->id;
+        $this->isInterviewModalOpen = true;
+
+        if ($this->hasInterviewFields()) {
+            $this->interviewDate = $application->interview_date?->format('Y-m-d');
+            $this->interviewTime = $application->interview_time;
+            $this->interviewLocation = $application->interview_location;
+            $this->interviewIsRemote = (bool) $application->interview_is_remote;
+            $this->interviewPlatform = $application->interview_platform;
+            $this->interviewAddress = $application->interview_address;
+        }
+    }
+
+    public function closeInterviewModal()
+    {
+        $this->resetInterviewForm();
+    }
+
+    public function saveInterviewMove()
+    {
+        if (!$this->pendingInterviewApplicationId) {
+            return;
+        }
+
+        $application = Application::where('user_id', Auth::id())
+            ->find($this->pendingInterviewApplicationId);
+
+        if (!$application) {
+            return;
+        }
+
+        $data = $this->validate([
+            'interviewDate' => ['required', 'date'],
+            'interviewTime' => ['required'],
+            'interviewLocation' => ['nullable', 'string', 'max:255'],
+            'interviewIsRemote' => ['boolean'],
+            'interviewPlatform' => ['nullable', 'string', 'max:255'],
+            'interviewAddress' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($this->hasStageColumn()) {
+            $application->stage = 'interview';
+        }
+
+        $application->status = 'interview';
+
+        if ($this->hasInterviewFields()) {
+            $application->interview_date = $data['interviewDate'];
+            $application->interview_time = $data['interviewTime'];
+            $application->interview_location = $data['interviewLocation'] ?? null;
+            $application->interview_is_remote = (bool) $data['interviewIsRemote'];
+            $application->interview_platform = $data['interviewIsRemote'] ? ($data['interviewPlatform'] ?? null) : null;
+            $application->interview_address = $data['interviewIsRemote'] ? null : ($data['interviewAddress'] ?? null);
+        }
+
+        $application->save();
+
+        session()->flash('status', 'Interview scheduled successfully.');
+        $this->resetInterviewForm();
     }
 
     public function toggleFavorite($id)
@@ -277,8 +405,34 @@ class ApplicationsBoard extends Component
             'editJobUrl',
             'editPersonalScore',
             'editNotes',
+            'editInterviewDate',
+            'editInterviewTime',
+            'editInterviewLocation',
+            'editInterviewIsRemote',
+            'editInterviewPlatform',
+            'editInterviewAddress',
+            'editingIsInterview',
         ]);
 
+        $this->editInterviewIsRemote = false;
+
+        $this->resetValidation();
+    }
+
+    protected function resetInterviewForm()
+    {
+        $this->reset([
+            'isInterviewModalOpen',
+            'pendingInterviewApplicationId',
+            'interviewDate',
+            'interviewTime',
+            'interviewLocation',
+            'interviewIsRemote',
+            'interviewPlatform',
+            'interviewAddress',
+        ]);
+
+        $this->interviewIsRemote = false;
         $this->resetValidation();
     }
 
