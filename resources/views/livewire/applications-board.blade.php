@@ -268,16 +268,18 @@
     </div>
 
     @if ($isEditModalOpen)
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" wire:key="edit-modal">
-        <div class="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
-            <div class="mb-4 flex items-center justify-between gap-4">
+    <div class="fixed inset-0 z-50 overflow-y-auto bg-black/40 px-4 py-4 sm:py-8" wire:key="edit-modal">
+        <div class="flex min-h-full items-start justify-center sm:items-center">
+        <div class="w-full max-w-lg sm:max-w-2xl rounded-2xl bg-white shadow-2xl max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between gap-4 border-b border-gray-200 px-4 py-4 sm:px-6">
                 <h2 class="text-xl font-semibold text-gray-900">Edit application</h2>
                 <button type="button" wire:click="closeEditModal" class="rounded-lg px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900">
                     Close
                 </button>
             </div>
 
-            <form wire:submit.prevent="updateApplication" class="space-y-4">
+            <form wire:submit.prevent="updateApplication" class="flex max-h-[calc(90vh-73px)] flex-col">
+                <div class="space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                         <input type="text" placeholder="Company name" wire:model.defer="editCompany" class="w-full border rounded px-3 py-2" />
@@ -360,7 +362,9 @@
                 </div>
                 @endif
 
-                <div class="flex justify-end gap-3">
+                </div>
+
+                <div class="flex justify-end gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:px-6">
                     <button type="button" wire:click="closeEditModal" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
                         Cancel
                     </button>
@@ -370,20 +374,23 @@
                 </div>
             </form>
         </div>
+        </div>
     </div>
     @endif
 
     @if ($isInterviewModalOpen)
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" wire:key="interview-modal">
-        <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-            <div class="mb-4 flex items-center justify-between gap-4">
+    <div class="fixed inset-0 z-50 overflow-y-auto bg-black/40 px-4 py-4 sm:py-8" wire:key="interview-modal">
+        <div class="flex min-h-full items-start justify-center sm:items-center">
+        <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between gap-4 border-b border-gray-200 px-4 py-4 sm:px-6">
                 <h2 class="text-xl font-semibold text-gray-900">Schedule interview</h2>
                 <button type="button" wire:click="closeInterviewModal" class="rounded-lg px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900">
                     Close
                 </button>
             </div>
 
-            <form wire:submit.prevent="saveInterviewMove" class="space-y-4">
+            <form wire:submit.prevent="saveInterviewMove" class="flex max-h-[calc(90vh-73px)] flex-col">
+                <div class="space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
                         <input type="date" wire:model.defer="interviewDate" class="w-full border rounded px-3 py-2" />
@@ -413,12 +420,14 @@
                     </div>
                 @else
                     <div>
-                        <input type="text" placeholder="Interview address" wire:model.defer="interviewAddress" class="w-full border rounded px-3 py-2" />
+                        <input type="text" placeholder="Interview address (optional)" wire:model.defer="interviewAddress" class="w-full border rounded px-3 py-2" />
                         @error('interviewAddress') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
                 @endif
 
-                <div class="flex justify-end gap-3">
+                </div>
+
+                <div class="flex justify-end gap-3 border-t border-gray-200 bg-white px-4 py-4 sm:px-6">
                     <button type="button" wire:click="closeInterviewModal" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
                         Cancel
                     </button>
@@ -427,6 +436,7 @@
                     </button>
                 </div>
             </form>
+        </div>
         </div>
     </div>
     @endif
