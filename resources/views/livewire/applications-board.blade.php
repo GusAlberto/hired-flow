@@ -29,23 +29,23 @@
 
         <div class="rounded-xl bg-white p-5 shadow">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total applications</div>
-            <div class="mt-3 text-8xl font-extrabold leading-none text-blue-700">{{ $total }}</div>
+            <div class="mt-3 text-5xl font-black leading-none text-blue-700">{{ $total }}</div>
         </div>
 
         <div class="rounded-xl bg-white p-5 shadow">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Interviews</div>
-            <div class="mt-3 text-8xl font-extrabold leading-none text-amber-600">{{ $interviews }}</div>
+            <div class="mt-3 text-5xl font-black leading-none text-amber-600">{{ $interviews }}</div>
         </div>
 
         <div class="rounded-xl bg-white p-5 shadow">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Offers</div>
-            <div class="mt-3 text-8xl font-extrabold leading-none text-emerald-600">{{ $offers }}</div>
+            <div class="mt-3 text-5xl font-black leading-none text-emerald-600">{{ $offers }}</div>
         </div>
 
         <button type="button" wire:click="toggleFavoritesFilter" class="rounded-xl bg-white p-5 text-left shadow transition border {{ $showFavoritesOnly ? 'border-yellow-400 ring-2 ring-yellow-200' : 'border-transparent hover:border-yellow-300' }}">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Favorite jobs</div>
             <div class="mt-3 flex items-end gap-2">
-                <span class="text-8xl font-extrabold leading-none text-yellow-500">{{ $favorites }}</span>
+                <span class="text-5xl font-black leading-none text-yellow-500">{{ $favorites }}</span>
                 <span class="text-lg leading-none text-yellow-500">★</span>
             </div>
 
@@ -57,7 +57,7 @@
         <button type="button" wire:click="toggleArchivedSection" class="rounded-xl bg-white p-5 text-left shadow transition border {{ $showArchivedSection ? 'border-gray-500 ring-2 ring-gray-200' : 'border-transparent hover:border-gray-300' }}">
             <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Archived</div>
             <div class="mt-3 flex items-end gap-2">
-                <span class="text-8xl font-extrabold leading-none text-slate-600">{{ $archivedCount }}</span>
+                <span class="text-5xl font-black leading-none text-slate-600">{{ $archivedCount }}</span>
                 <span class="text-lg leading-none text-slate-500">🗂️</span>
             </div>
 
