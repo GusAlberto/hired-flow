@@ -142,14 +142,15 @@
         <button
             type="button"
             wire:click="toggleKanbanOrientation"
-            x-data="{ isVertical: @js($kanbanOrientation === 'vertical') }"
-            @click="isVertical = !isVertical"
+            wire:loading.attr="disabled"
+            wire:loading.class="cursor-not-allowed opacity-60"
+            wire:target="toggleKanbanOrientation"
             aria-label="Toggle kanban orientation"
             class="group relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100"
         >
             <svg
                 class="h-5 w-5 transition-transform duration-300 ease-out"
-                :style="`transform: rotate(${isVertical ? 90 : 0}deg)`"
+                style="transform: rotate({{ $kanbanOrientation === 'vertical' ? 90 : 0 }}deg)"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
