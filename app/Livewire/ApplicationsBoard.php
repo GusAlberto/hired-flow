@@ -24,6 +24,7 @@ class ApplicationsBoard extends Component
     public $isCreateFormOpen = false;
     public $showFavoritesOnly = false;
     public $showArchivedSection = false;
+    public $kanbanOrientation = 'horizontal';
 
     public $company;
     public $position;
@@ -66,6 +67,14 @@ class ApplicationsBoard extends Component
     public $interviewAddress;
 
     protected ApplicationService $service;
+
+    public function mount(): void
+    {
+        $orientation = session('kanban_orientation', 'horizontal');
+        $this->kanbanOrientation = in_array($orientation, ['horizontal', 'vertical'], true)
+            ? $orientation
+            : 'horizontal';
+    }
 
     /** Inject the service via Livewire's boot hook (not serialised between requests). */
     public function boot(ApplicationService $service): void
@@ -269,6 +278,12 @@ class ApplicationsBoard extends Component
         $this->showArchivedSection = !$this->showArchivedSection;
     }
 
+    public function toggleKanbanOrientation(): void
+    {
+        $this->kanbanOrientation = $this->kanbanOrientation === 'horizontal' ? 'vertical' : 'horizontal';
+        session(['kanban_orientation' => $this->kanbanOrientation]);
+    }
+
     // =========================================================================
     // Render
     // =========================================================================
@@ -300,6 +315,7 @@ class ApplicationsBoard extends Component
             'showFavoritesOnly' => $this->showFavoritesOnly,
             'showArchivedSection' => $this->showArchivedSection,
             'hasFavoriteColumn' => $hasFavoriteColumn,
+            'kanbanOrientation' => $this->kanbanOrientation,
         ]);
     }
 
