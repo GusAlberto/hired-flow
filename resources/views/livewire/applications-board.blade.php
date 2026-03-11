@@ -216,6 +216,7 @@
                             {{ is_null($app->personal_score) ? 'Not rated' : $app->personal_score . '/10' }}
                         </div>
                         @if ($app->status === 'interview' && ($app->interview_date || $app->interview_time || $app->interview_location || $app->interview_platform || $app->interview_address))
+                        <div class="my-2 border-t border-gray-200"></div>
                         <div>
                             <span class="font-medium">📅 Interview:</span>
                             {{ $app->interview_date?->format('d/m/Y') ?? 'Date not set' }}
