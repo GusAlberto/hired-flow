@@ -48,7 +48,8 @@ class SettingsController extends Controller
 
         $query = Application::query()
             ->where('user_id', $request->user()->id)
-            ->whereDate('applied_at', '<=', $thresholdDate)
+            // Archive only after the configured amount of full days has passed.
+            ->whereDate('applied_at', '<', $thresholdDate)
             ->where('status', '!=', 'archived');
 
         $updateData = ['status' => 'archived'];
