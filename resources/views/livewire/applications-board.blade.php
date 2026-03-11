@@ -16,9 +16,14 @@
     @endif
 
     <div class="mb-8 flex items-center justify-between gap-4">
-        <h1 class="text-3xl font-bold">
-            Job Application Tracker
-        </h1>
+        <div class="space-y-2">
+            <h1 class="text-3xl font-bold">
+                Job Application Tracker
+            </h1>
+            <a href="{{ route('settings.card-source-colors.edit') }}" class="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50">
+                Edit card colors by source
+            </a>
+        </div>
 
         <button type="button" wire:click="openCreateForm" class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
             + New application
@@ -110,7 +115,7 @@
 
             <div id="{{ $status }}" class="space-y-3 min-h-24">
                 @foreach ($column['items'] as $app)
-                <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}" x-data="{ expanded: false }">
+                <article class="card rounded-2xl border border-gray-200 p-4 shadow-sm" style="background-color: {{ $app->card_background_color ?? '#ffffff' }};" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}" x-data="{ expanded: false }">
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
                             <div class="flex items-center gap-3">

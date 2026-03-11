@@ -10,6 +10,20 @@ use Livewire\Component;
 
 class ApplicationsBoard extends Component
 {
+    private const DEFAULT_SOURCE_COLORS = [
+        'linkedin' => '#dbeafe',
+        'indeed' => '#fef3c7',
+        'glassdoor' => '#dcfce7',
+        'gupy' => '#ede9fe',
+        'catho' => '#fae8ff',
+        'infojobs' => '#ffedd5',
+        'vagas' => '#fef9c3',
+        'greenhouse' => '#d1fae5',
+        'lever' => '#e0f2fe',
+        'workday' => '#fee2e2',
+        'other' => '#f3f4f6',
+    ];
+
     public const LEGACY_STAGE_MAP = [
         'aplicada' => 'applied',
         'aguardando' => 'waiting',
@@ -115,6 +129,58 @@ class ApplicationsBoard extends Component
             'interview_platform',
             'interview_address',
         ]);
+    }
+
+    protected function getSourceColors(): array
+    {
+        $customColors = Auth::user()?->card_source_colors;
+
+        if (!is_array($customColors)) {
+            return self::DEFAULT_SOURCE_COLORS;
+        }
+
+        $safeCustomColors = [];
+
+        foreach (self::DEFAULT_SOURCE_COLORS as $source => $defaultColor) {
+            $candidate = $customColors[$source] ?? null;
+
+            if (is_string($candidate) && preg_match('/^#[0-9A-Fa-f]{6}$/', $candidate) === 1) {
+                $safeCustomColors[$source] = strtolower($candidate);
+                continue;
+            }
+
+            $safeCustomColors[$source] = $defaultColor;
+        }
+
+        return $safeCustomColors;
+    }
+
+    protected function getSourceFromJobUrl(?string $url): string
+    {
+        if (!$url) {
+            return 'other';
+        }
+
+        $host = strtolower(parse_url($url, PHP_URL_HOST) ?? '');
+        $host = preg_replace('/^www\./', '', $host);
+
+        if (!$host) {
+            return 'other';
+        }
+
+        return match (true) {
+            str_contains($host, 'linkedin.') => 'linkedin',
+            str_contains($host, 'indeed.') => 'indeed',
+            str_contains($host, 'glassdoor.') => 'glassdoor',
+            str_contains($host, 'gupy.') => 'gupy',
+            str_contains($host, 'catho.') => 'catho',
+            str_contains($host, 'infojobs.') => 'infojobs',
+            str_contains($host, 'vagas.') => 'vagas',
+            str_contains($host, 'greenhouse.') => 'greenhouse',
+            str_contains($host, 'lever.') => 'lever',
+            str_contains($host, 'workday.') => 'workday',
+            default => 'other',
+        };
     }
 
     public function saveApplication()
@@ -557,6 +623,7 @@ class ApplicationsBoard extends Component
     {
         $hasStageColumn = $this->hasStageColumn();
         $hasFavoriteColumn = $this->hasFavoriteColumn();
+        $sourceColors = $this->getSourceColors();
 
         $apps = Application::where('user_id', Auth::id())
             ->latest('updated_at')
@@ -585,6 +652,11 @@ class ApplicationsBoard extends Component
                 }
             });
         }
+
+        $apps->each(function (Application $application) use ($sourceColors) {
+            $source = $this->getSourceFromJobUrl($application->job_url);
+            $application->card_background_color = $sourceColors[$source] ?? self::DEFAULT_SOURCE_COLORS['other'];
+        });
 
         $total = $apps->count();
 
