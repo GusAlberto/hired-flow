@@ -320,6 +320,46 @@
                     @error('editNotes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
 
+                @if ($editingIsInterview)
+                <div class="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <div class="text-sm font-semibold text-gray-900">Interview details</div>
+
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <input type="date" wire:model.defer="editInterviewDate" class="w-full border rounded px-3 py-2" />
+                            @error('editInterviewDate') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <input type="time" wire:model.defer="editInterviewTime" class="w-full border rounded px-3 py-2" />
+                            @error('editInterviewTime') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div>
+                        <input type="text" placeholder="Interview location (optional)" wire:model.defer="editInterviewLocation" class="w-full border rounded px-3 py-2" />
+                        @error('editInterviewLocation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <label class="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3">
+                        <span class="text-sm font-medium text-gray-700">Remote interview</span>
+                        <input type="checkbox" wire:model.live="editInterviewIsRemote" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    </label>
+
+                    @if ($editInterviewIsRemote)
+                        <div>
+                            <input type="text" placeholder="Platform (optional)" wire:model.defer="editInterviewPlatform" class="w-full border rounded px-3 py-2" />
+                            @error('editInterviewPlatform') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    @else
+                        <div>
+                            <input type="text" placeholder="Interview address (optional)" wire:model.defer="editInterviewAddress" class="w-full border rounded px-3 py-2" />
+                            @error('editInterviewAddress') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+                </div>
+                @endif
+
                 <div class="flex justify-end gap-3">
                     <button type="button" wire:click="closeEditModal" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
                         Cancel

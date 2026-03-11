@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\Application;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Attributes\On;
@@ -43,6 +42,13 @@ class ApplicationsBoard extends Component
     public $editJobUrl;
     public $editPersonalScore;
     public $editNotes;
+    public $editInterviewDate;
+    public $editInterviewTime;
+    public $editInterviewLocation;
+    public $editInterviewIsRemote = false;
+    public $editInterviewPlatform;
+    public $editInterviewAddress;
+    public $editingIsInterview = false;
 
     public $interviewDate;
     public $interviewTime;
@@ -167,6 +173,16 @@ class ApplicationsBoard extends Component
         $this->editJobUrl = $application->job_url;
         $this->editPersonalScore = $application->personal_score;
         $this->editNotes = $application->notes;
+        $this->editingIsInterview = ($application->stage ?? $application->status) === 'interview';
+
+        if ($this->hasInterviewFields()) {
+            $this->editInterviewDate = $application->interview_date?->format('Y-m-d');
+            $this->editInterviewTime = $application->interview_time;
+            $this->editInterviewLocation = $application->interview_location;
+            $this->editInterviewIsRemote = (bool) $application->interview_is_remote;
+            $this->editInterviewPlatform = $application->interview_platform;
+            $this->editInterviewAddress = $application->interview_address;
+        }
     }
 
     public function updateApplication()
@@ -178,6 +194,7 @@ class ApplicationsBoard extends Component
         $hasCityColumn = $this->hasCityColumn();
         $hasLocationColumn = $this->hasLocationColumn();
         $hasPersonalScoreColumn = $this->hasPersonalScoreColumn();
+        $hasInterviewFields = $this->hasInterviewFields();
 
         $application = Application::where('user_id', Auth::id())
             ->find($this->editingApplicationId);
@@ -195,6 +212,12 @@ class ApplicationsBoard extends Component
             'editJobUrl' => ['nullable', 'string', 'max:255'],
             'editPersonalScore' => ['nullable', 'integer', 'between:0,10'],
             'editNotes' => ['nullable', 'string'],
+            'editInterviewDate' => [$this->editingIsInterview ? 'required' : 'nullable', 'date'],
+            'editInterviewTime' => [$this->editingIsInterview ? 'required' : 'nullable'],
+            'editInterviewLocation' => ['nullable', 'string', 'max:255'],
+            'editInterviewIsRemote' => ['boolean'],
+            'editInterviewPlatform' => ['nullable', 'string', 'max:255'],
+            'editInterviewAddress' => ['nullable', 'string', 'max:255'],
         ]);
 
         $updateData = [
@@ -215,6 +238,19 @@ class ApplicationsBoard extends Component
 
         if ($hasPersonalScoreColumn) {
             $updateData['personal_score'] = $data['editPersonalScore'] ?? null;
+        }
+
+        if ($hasInterviewFields) {
+            $updateData['interview_date'] = $this->editingIsInterview ? ($data['editInterviewDate'] ?? null) : null;
+            $updateData['interview_time'] = $this->editingIsInterview ? ($data['editInterviewTime'] ?? null) : null;
+            $updateData['interview_location'] = $this->editingIsInterview ? ($data['editInterviewLocation'] ?? null) : null;
+            $updateData['interview_is_remote'] = $this->editingIsInterview ? (bool) ($data['editInterviewIsRemote'] ?? false) : false;
+            $updateData['interview_platform'] = $this->editingIsInterview && ($data['editInterviewIsRemote'] ?? false)
+                ? ($data['editInterviewPlatform'] ?? null)
+                : null;
+            $updateData['interview_address'] = $this->editingIsInterview && !($data['editInterviewIsRemote'] ?? false)
+                ? ($data['editInterviewAddress'] ?? null)
+                : null;
         }
 
         $application->update($updateData);
@@ -290,7 +326,7 @@ class ApplicationsBoard extends Component
             'interviewLocation' => ['nullable', 'string', 'max:255'],
             'interviewIsRemote' => ['boolean'],
             'interviewPlatform' => ['nullable', 'string', 'max:255'],
-            'interviewAddress' => [Rule::requiredIf(!$this->interviewIsRemote), 'nullable', 'string', 'max:255'],
+            'interviewAddress' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($this->hasStageColumn()) {
@@ -369,7 +405,16 @@ class ApplicationsBoard extends Component
             'editJobUrl',
             'editPersonalScore',
             'editNotes',
+            'editInterviewDate',
+            'editInterviewTime',
+            'editInterviewLocation',
+            'editInterviewIsRemote',
+            'editInterviewPlatform',
+            'editInterviewAddress',
+            'editingIsInterview',
         ]);
+
+        $this->editInterviewIsRemote = false;
 
         $this->resetValidation();
     }
