@@ -152,7 +152,7 @@
                 @foreach ($column['items'] as $app)
                 <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}" x-data="{ expanded: false }">
                     <div class="mb-3 flex items-start justify-between gap-3">
-                        <div>
+                        <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-3">
                                 @if ($hasFavoriteColumn)
                                     <div class="flex h-10 w-10 min-h-10 min-w-10 max-h-10 max-w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white">
@@ -172,25 +172,37 @@
                                     {{ $app->position }}
                                 </div>
                             </div>
-                            <div class="text-xs text-gray-400 pt-2">
+                            @php
+                                $isInterviewToday = $app->interview_date?->isToday();
+                                $isInterviewTomorrow = $app->interview_date?->isTomorrow();
+                            @endphp
+                            <div class="mt-2 text-xs text-gray-400">
                                 {{ $app->applied_at?->format('d/m/Y') }}
                             </div>
                         </div>
 
-                        <details class="card-actions relative">
-                            <summary class="cursor-pointer list-none rounded-xl border border-gray-200 px-2.5 py-1 text-lg leading-none text-gray-500 transition hover:bg-gray-100 hover:text-gray-700">
-                                ⋯
-                            </summary>
+                        <div class="flex shrink-0 flex-col items-end gap-2">
+                            <details class="card-actions relative">
+                                <summary class="cursor-pointer list-none rounded-xl border border-gray-200 px-2.5 py-1 text-lg leading-none text-gray-500 transition hover:bg-gray-100 hover:text-gray-700">
+                                    ⋯
+                                </summary>
 
-                            <div class="absolute right-0 z-10 mt-2 w-36 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
-                                <button type="button" wire:click="editApplication({{ $app->id }})" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
-                                    Edit
-                                </button>
-                                <button type="button" wire:click="deleteApplication({{ $app->id }})" wire:confirm="Delete this application?" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">
-                                    Delete
-                                </button>
-                            </div>
-                        </details>
+                                <div class="absolute right-0 z-10 mt-2 w-36 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                                    <button type="button" wire:click="editApplication({{ $app->id }})" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100">
+                                        Edit
+                                    </button>
+                                    <button type="button" wire:click="deleteApplication({{ $app->id }})" wire:confirm="Delete this application?" class="block w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">
+                                        Delete
+                                    </button>
+                                </div>
+                            </details>
+
+                            @if ($app->interview_date && ($isInterviewToday || $isInterviewTomorrow))
+                                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $isInterviewToday ? 'bg-red-100 text-red-700 ring-1 ring-red-200' : 'bg-orange-100 text-orange-700 ring-1 ring-orange-200' }}">
+                                    {{ $isInterviewToday ? 'Today' : 'Tomorrow' }}
+                                </span>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="space-y-2 text-sm text-gray-700">
