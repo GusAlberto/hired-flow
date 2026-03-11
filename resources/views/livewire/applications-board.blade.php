@@ -125,7 +125,27 @@
         x-data="kanbanToggleDock(@js($kanbanTogglePosition))"
         class="mb-4"
     >
-        <div x-ref="track" class="relative h-10 w-full select-none">
+        <div x-ref="track" class="relative h-12 w-full select-none">
+            <div
+                class="pointer-events-none absolute left-0 top-0 h-12 w-12 rounded-xl border border-dashed bg-white/70 transition-all duration-200"
+                :class="dragging
+                    ? (previewSide() === 'left'
+                        ? 'border-blue-300 shadow-lg ring-4 ring-blue-100'
+                        : 'border-gray-300 shadow-md opacity-90')
+                    : 'opacity-0'"
+                aria-hidden="true"
+            ></div>
+
+            <div
+                class="pointer-events-none absolute right-0 top-0 h-12 w-12 rounded-xl border border-dashed bg-white/70 transition-all duration-200"
+                :class="dragging
+                    ? (previewSide() === 'right'
+                        ? 'border-blue-300 shadow-lg ring-4 ring-blue-100'
+                        : 'border-gray-300 shadow-md opacity-90')
+                    : 'opacity-0'"
+                aria-hidden="true"
+            ></div>
+
             <button
                 x-ref="button"
                 type="button"
@@ -141,7 +161,7 @@
                 class="group absolute top-0 inline-flex h-12 w-12 touch-none items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-100"
                 :class="dragging
                     ? 'cursor-grabbing scale-105 shadow-lg transition-none'
-                    : 'cursor-grab transition-[left,right,background-color,opacity,transform,box-shadow] duration-150 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]'"
+                    : 'cursor-grab transition-[left,background-color,opacity,transform,box-shadow] duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]'"
                 style="will-change: left, transform;"
                 :style="buttonStyle()"
             >
@@ -379,11 +399,8 @@
             grabOffsetX: 0,
 
             buttonStyle() {
-                if (this.currentLeft !== null) {
-                    return `left: ${this.currentLeft}px;`
-                }
-
-                return this.side === 'left' ? 'left: 0px;' : 'right: 0px;'
+                const left = this.currentLeft ?? this.dockedLeft()
+                return `left: ${left}px;`
             },
 
             startDrag(event) {
@@ -391,7 +408,7 @@
                 this.didDrag = false
                 this.pointerId = event.pointerId
                 this.startX = event.clientX
-                this.currentLeft = this.side === 'left' ? 0 : this.maxLeft()
+                this.currentLeft = this.dockedLeft()
                 this.grabOffsetX = event.clientX - this.$refs.button.getBoundingClientRect().left
 
                 if (this.$refs.button.setPointerCapture) {
@@ -415,7 +432,7 @@
                 }
 
                 if (this.didDrag) {
-                    const nextSide = this.buttonCenter() < this.trackMidpoint() ? 'left' : 'right'
+                    const nextSide = this.previewSide()
                     this.side = nextSide
                     this.$wire.setKanbanTogglePosition(nextSide)
                 }
@@ -460,8 +477,12 @@
             },
 
             buttonCenter() {
-                const left = this.currentLeft ?? (this.side === 'left' ? 0 : this.maxLeft())
+                const left = this.currentLeft ?? this.dockedLeft()
                 return left + (this.buttonWidth() / 2)
+            },
+
+            previewSide() {
+                return this.buttonCenter() < this.trackMidpoint() ? 'left' : 'right'
             },
 
             trackMidpoint() {
@@ -474,6 +495,10 @@
 
             maxLeft() {
                 return Math.max(this.$refs.track.clientWidth - this.buttonWidth(), 0)
+            },
+
+            dockedLeft() {
+                return this.side === 'left' ? 0 : this.maxLeft()
             },
         }
     }
