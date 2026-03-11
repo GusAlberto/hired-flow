@@ -138,7 +138,9 @@
                 wire:loading.class="cursor-not-allowed opacity-60"
                 wire:target="toggleKanbanOrientation,setKanbanTogglePosition"
                 aria-label="Toggle kanban orientation"
-                class="group absolute top-0 inline-flex h-10 w-10 touch-none items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition-[left,right,background-color,opacity,transform] duration-200 hover:bg-gray-100"
+                class="group absolute top-0 inline-flex h-12 w-12 touch-none items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition-[left,right,background-color,opacity,transform,box-shadow] duration-100 ease-out hover:bg-gray-100"
+                :class="dragging ? 'scale-105 shadow-lg cursor-grabbing' : 'cursor-grab'"
+                style="will-change: left, transform;"
                 :style="buttonStyle()"
             >
                 <svg
@@ -387,6 +389,10 @@
                 this.pointerId = event.pointerId
                 this.startX = event.clientX
                 this.currentLeft = this.side === 'left' ? 0 : this.maxLeft()
+
+                if (this.$refs.button.setPointerCapture) {
+                    this.$refs.button.setPointerCapture(event.pointerId)
+                }
             },
 
             onDrag(event) {
@@ -410,12 +416,20 @@
                     this.$wire.setKanbanTogglePosition(nextSide)
                 }
 
+                if (this.$refs.button.releasePointerCapture && this.$refs.button.hasPointerCapture?.(event.pointerId)) {
+                    this.$refs.button.releasePointerCapture(event.pointerId)
+                }
+
                 this.dragging = false
                 this.pointerId = null
                 this.currentLeft = null
             },
 
             cancelDrag() {
+                if (this.pointerId !== null && this.$refs.button.releasePointerCapture && this.$refs.button.hasPointerCapture?.(this.pointerId)) {
+                    this.$refs.button.releasePointerCapture(this.pointerId)
+                }
+
                 this.dragging = false
                 this.pointerId = null
                 this.currentLeft = null
