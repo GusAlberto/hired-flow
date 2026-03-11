@@ -2,7 +2,6 @@
     'isOpen' => false,
     'interviewDate' => null,
     'interviewTime' => '',
-    'interviewLocation' => '',
     'interviewIsRemote' => false,
     'interviewPlatform' => '',
     'interviewAddress' => '',
@@ -31,11 +30,6 @@
                             <input type="time" wire:model.defer="interviewTime" class="w-full border rounded px-3 py-2" />
                             @error('interviewTime') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
-                    </div>
-
-                    <div>
-                        <input type="text" placeholder="Interview location (optional)" wire:model.defer="interviewLocation" class="w-full border rounded px-3 py-2" />
-                        @error('interviewLocation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 
                     <label class="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
