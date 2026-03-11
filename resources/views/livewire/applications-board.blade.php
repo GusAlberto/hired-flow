@@ -25,66 +25,45 @@
         </button>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+    <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-5">
 
-        <div class="bg-white shadow p-4 rounded">
-
-            Total applications
-
-            <div class="text-2xl font-bold">
-                {{ $total }}
-            </div>
-
+        <div class="rounded-xl bg-white p-5 shadow">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total applications</div>
+            <div class="mt-3 text-5xl font-black leading-none text-blue-700">{{ $total }}</div>
         </div>
 
-        <div class="bg-white shadow p-4 rounded">
-
-            Interviews
-
-            <div class="text-2xl font-bold">
-                {{ $interviews }}
-            </div>
-
+        <div class="rounded-xl bg-white p-5 shadow">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Interviews</div>
+            <div class="mt-3 text-5xl font-black leading-none text-amber-600">{{ $interviews }}</div>
         </div>
 
-        <div class="bg-white shadow p-4 rounded">
-
-            Offers
-
-            <div class="text-2xl font-bold">
-                {{ $offers }}
-            </div>
-
+        <div class="rounded-xl bg-white p-5 shadow">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Offers</div>
+            <div class="mt-3 text-5xl font-black leading-none text-emerald-600">{{ $offers }}</div>
         </div>
 
-        <button type="button" wire:click="toggleFavoritesFilter" class="bg-white shadow p-4 rounded text-left transition border {{ $showFavoritesOnly ? 'border-yellow-400 ring-2 ring-yellow-200' : 'border-transparent hover:border-yellow-300' }}">
-
-            Favorite jobs
-
-            <div class="text-2xl font-bold flex items-center gap-2">
-                <span>{{ $favorites }}</span>
-                <span class="text-yellow-500">★</span>
+        <button type="button" wire:click="toggleFavoritesFilter" class="rounded-xl bg-white p-5 text-left shadow transition border {{ $showFavoritesOnly ? 'border-yellow-400 ring-2 ring-yellow-200' : 'border-transparent hover:border-yellow-300' }}">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Favorite jobs</div>
+            <div class="mt-3 flex items-end gap-2">
+                <span class="text-5xl font-black leading-none text-yellow-500">{{ $favorites }}</span>
+                <span class="text-lg leading-none text-yellow-500">★</span>
             </div>
 
-            <div class="text-xs text-gray-500 mt-1">
+            <div class="mt-2 text-xs text-gray-500">
                 Click to {{ $showFavoritesOnly ? 'show all jobs' : 'filter only favorites' }}
             </div>
-
         </button>
 
-        <button type="button" wire:click="toggleArchivedSection" class="bg-white shadow p-4 rounded text-left transition border {{ $showArchivedSection ? 'border-gray-500 ring-2 ring-gray-200' : 'border-transparent hover:border-gray-300' }}">
-
-            Archived
-
-            <div class="text-2xl font-bold flex items-center gap-2">
-                <span>{{ $archivedCount }}</span>
-                <span class="text-gray-500">🗂️</span>
+        <button type="button" wire:click="toggleArchivedSection" class="rounded-xl bg-white p-5 text-left shadow transition border {{ $showArchivedSection ? 'border-gray-500 ring-2 ring-gray-200' : 'border-transparent hover:border-gray-300' }}">
+            <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Archived</div>
+            <div class="mt-3 flex items-end gap-2">
+                <span class="text-5xl font-black leading-none text-slate-600">{{ $archivedCount }}</span>
+                <span class="text-lg leading-none text-slate-500">🗂️</span>
             </div>
 
-            <div class="text-xs text-gray-500 mt-1">
+            <div class="mt-2 text-xs text-gray-500">
                 Click to {{ $showArchivedSection ? 'hide archived list' : 'show archived list' }}
             </div>
-
         </button>
 
     </div>
@@ -125,6 +104,10 @@
         </div>
     @endif
 
+    <div class="my-8 flex items-center" aria-hidden="true">
+        <div class="h-px w-full bg-gray-300"></div>
+    </div>
+
     <x-modals.create-application-modal 
         :isOpen="$isCreateFormOpen"
         :company="$company"
@@ -138,7 +121,37 @@
         :salaryExpected="$salary_expected"
     />
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
+    <div class="mb-4 flex justify-end">
+        <button
+            type="button"
+            wire:click="toggleKanbanOrientation"
+            wire:loading.attr="disabled"
+            wire:loading.class="cursor-not-allowed opacity-60"
+            wire:target="toggleKanbanOrientation"
+            aria-label="Toggle kanban orientation"
+            class="group relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100"
+        >
+            <svg
+                class="h-5 w-5 transition-transform duration-300 ease-out"
+                style="transform: rotate({{ $kanbanOrientation === 'vertical' ? 90 : 0 }}deg)"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+            >
+                <path d="M8 7H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M16 4L19 7L16 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M16 17H5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M8 14L5 17L8 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+
+            <span class="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                {{ $kanbanOrientation === 'horizontal' ? 'Switch to vertical view' : 'Switch to horizontal view' }}
+            </span>
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 {{ $kanbanOrientation === 'horizontal' ? 'xl:grid-cols-5' : '' }}">
         @foreach ($columns as $status => $column)
         <div class="rounded-2xl bg-gray-50 p-4 border border-gray-200">
             <div class="mb-3 flex items-center justify-between gap-3">
