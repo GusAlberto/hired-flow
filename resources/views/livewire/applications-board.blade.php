@@ -179,16 +179,18 @@
                                 aria-label="Toggle job details"
                                 title="Show more details"
                             >
-                                <span class="text-base transition-transform duration-200" :class="expanded ? 'rotate-180' : ''">⌄</span>
+                                <svg
+                                    class="h-4 w-4 transition-transform duration-200"
+                                    :class="expanded ? 'rotate-180' : ''"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
                             </button>
                         </div>
-
-                        @if ($app->job_summary)
-                        <div>
-                            <span class="font-medium">📌 Job summary:</span>
-                            {{ \Illuminate\Support\Str::limit($app->job_summary, 100) }}
-                        </div>
-                        @endif
 
                         <div x-show="expanded" x-transition.opacity.duration.150ms class="space-y-2 border-t border-gray-200 pt-2">
                         <div>
