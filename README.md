@@ -27,7 +27,27 @@ HiredFlow helps developers and job seekers track their job applications, intervi
 * **Containerization:** Docker (Laravel Sail)
 
 ---
-
+## Project Architecture
+```bash
+app/
+├── Concerns/
+│ └── DetectsApplicationColumns.php # Shared trait for detecting application columns
+│
+├── Repositories/
+│ └── ApplicationRepository.php # Handles database access
+│
+├── Actions/
+│ ├── CreateApplication.php # Handles job application creation
+│ ├── UpdateApplication.php # Handles job application updates
+│ ├── MoveApplication.php # Handles Kanban column movement
+│ └── ScheduleInterview.php # Handles interview scheduling
+│
+├── Services/
+│ └── ApplicationService.php # Business logic orchestrator
+│
+└── Livewire/
+└── ApplicationsBoard.php # UI layer (validation + user interaction)
+```
 ## Screenshot
 
 Add a screenshot of the board here:
