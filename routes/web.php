@@ -19,7 +19,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/archiving/run-now', [SettingsController::class, 'runArchivingNow'])->name('settings.archiving.run-now');
     
     Route::get('/dashboard', ApplicationsBoard::class)
-        ->middleware('verified')
+        ->middleware('verified.when-enabled')
         ->name('dashboard');
 });
 
