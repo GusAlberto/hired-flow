@@ -25,11 +25,24 @@ class ApplicationPagesTest extends TestCase
 
     public function test_dashboard_requires_verified_email(): void
     {
+        config()->set('auth.require_verified_email', true);
+
         $user = User::factory()->unverified()->create();
 
         $this->actingAs($user)
             ->get('/dashboard')
             ->assertRedirect(route('verification.notice', absolute: false));
+    }
+
+    public function test_unverified_user_can_access_dashboard_when_verification_requirement_is_disabled(): void
+    {
+        config()->set('auth.require_verified_email', false);
+
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk();
     }
 
     public function test_verified_user_can_view_dashboard_and_only_their_applications_are_shown(): void
