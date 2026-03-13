@@ -156,6 +156,6 @@
   </div>
 </main>
 
-<footer class="py-2"></footer>
+<footer class="register-footer py-2"></footer>
 </body>
 </html>

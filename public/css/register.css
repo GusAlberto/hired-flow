@@ -3,13 +3,78 @@ body.register-page {
 }
 
 .register-brand {
-    font-size: 1.3rem;
+    font-size: 1.85rem;
 }
 
 .register-brand-badge {
-    width: 0.95rem;
-    height: 0.95rem;
+    width: 1.05rem;
+    height: 1.05rem;
     font-size: 8px;
+}
+
+.register-main {
+    max-width: 31rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.register-heading {
+    margin-bottom: 0.4rem;
+}
+
+.register-heading h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0.1rem;
+}
+
+.register-heading p {
+    font-size: 0.7rem;
+}
+
+.register-card {
+    max-width: 26.5rem;
+    margin: 0 auto;
+    padding: 0.8rem;
+    border-radius: 0.65rem;
+}
+
+.register-card h3 {
+    font-size: 1rem;
+}
+
+.register-google-btn {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+}
+
+.register-google-btn span {
+    font-size: 0.68rem;
+}
+
+.register-form {
+    gap: 0.4rem;
+}
+
+.register-form label {
+    font-size: 0.67rem;
+    margin-bottom: 0.18rem;
+}
+
+.register-input {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+    font-size: 0.78rem;
+}
+
+.register-submit {
+    padding-top: 0.48rem;
+    padding-bottom: 0.48rem;
+    font-size: 0.7rem;
+    margin-top: 0.45rem;
+}
+
+.register-footer {
+    min-height: 2.2rem;
 }
 
 /* Notebook-focused compact layout, similar to ~90% zoom visual density. */
@@ -24,9 +89,9 @@ body.register-page {
     }
 
     .register-main {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-        max-width: 34rem;
+        padding-top: 0.35rem;
+        padding-bottom: 0.35rem;
+        max-width: 30rem;
     }
 
     .register-heading {
@@ -43,8 +108,9 @@ body.register-page {
     }
 
     .register-card {
-        padding: 0.9rem;
-        border-radius: 0.65rem;
+        max-width: 25.5rem;
+        padding: 0.7rem;
+        border-radius: 0.58rem;
     }
 
     .register-google-btn {
@@ -72,5 +138,85 @@ body.register-page {
         padding-bottom: 0.5rem;
         font-size: 0.72rem;
         margin-top: 0.5rem;
+    }
+}
+
+/* Extra compact mode for common notebook viewport 1366x768. */
+@media (min-width: 1280px) and (max-width: 1400px) and (max-height: 800px) {
+    .register-header {
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
+    }
+
+    .register-main {
+        max-width: 27rem;
+        padding-top: 0.1rem;
+        padding-bottom: 0.1rem;
+    }
+
+    .register-heading {
+        margin-bottom: 0.25rem;
+    }
+
+    .register-heading h2 {
+        font-size: 1.2rem;
+        margin-bottom: 0;
+    }
+
+    .register-heading p {
+        font-size: 0.66rem;
+    }
+
+    .register-card {
+        max-width: 23.5rem;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .register-card h3 {
+        font-size: 0.9rem;
+    }
+
+    .register-card .mb-4 {
+        margin-bottom: 0.3rem;
+    }
+
+    .register-card .mt-4 {
+        margin-top: 0.3rem;
+    }
+
+    .register-card .text-xs {
+        font-size: 0.62rem;
+    }
+
+    .register-google-btn {
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
+    }
+
+    .register-form {
+        gap: 0.28rem;
+    }
+
+    .register-form label {
+        margin-bottom: 0.08rem;
+        font-size: 0.62rem;
+    }
+
+    .register-input {
+        padding-top: 0.34rem;
+        padding-bottom: 0.34rem;
+        font-size: 0.72rem;
+    }
+
+    .register-submit {
+        padding-top: 0.36rem;
+        padding-bottom: 0.36rem;
+        font-size: 0.66rem;
+        margin-top: 0.3rem;
+    }
+
+    .register-footer {
+        min-height: 0.35rem;
     }
 }
