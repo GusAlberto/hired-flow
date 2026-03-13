@@ -1,0 +1,76 @@
+body.register-page {
+    font-family: 'Inter', sans-serif;
+}
+
+.register-brand {
+    font-size: 1.3rem;
+}
+
+.register-brand-badge {
+    width: 0.95rem;
+    height: 0.95rem;
+    font-size: 8px;
+}
+
+/* Notebook-focused compact layout, similar to ~90% zoom visual density. */
+@media (min-width: 1024px) and (max-width: 1600px) {
+    .register-header {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .register-back {
+        margin-left: 0.75rem;
+    }
+
+    .register-main {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        max-width: 34rem;
+    }
+
+    .register-heading {
+        margin-bottom: 0.5rem;
+    }
+
+    .register-heading h2 {
+        font-size: 1.45rem;
+        margin-bottom: 0.15rem;
+    }
+
+    .register-heading p {
+        font-size: 0.72rem;
+    }
+
+    .register-card {
+        padding: 0.9rem;
+        border-radius: 0.65rem;
+    }
+
+    .register-google-btn {
+        padding-top: 0.45rem;
+        padding-bottom: 0.45rem;
+    }
+
+    .register-form {
+        gap: 0.45rem;
+    }
+
+    .register-form label {
+        font-size: 0.68rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .register-input {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .register-submit {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        font-size: 0.72rem;
+        margin-top: 0.5rem;
+    }
+}
