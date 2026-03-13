@@ -129,7 +129,7 @@
             wire:loading.class="cursor-not-allowed opacity-60"
             wire:target="toggleKanbanOrientation"
             aria-label="Toggle kanban orientation"
-            class="group relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100"
+            class="group relative inline-flex h-14 w-14 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100"
         >
             <svg
                 class="h-5 w-5 transition-transform duration-300 ease-out"

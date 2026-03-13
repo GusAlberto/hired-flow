@@ -112,4 +112,16 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Require Verified Email
+    |--------------------------------------------------------------------------
+    |
+    | Controls whether protected areas (for example, the dashboard) should
+    | require users to verify their email address first.
+    |
+    */
+
+    'require_verified_email' => env('REQUIRE_VERIFIED_EMAIL', false),
+
 ];
