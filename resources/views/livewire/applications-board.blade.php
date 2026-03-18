@@ -25,27 +25,105 @@
         </button>
     </div>
 
-    <div class="mb-6 flex items-center gap-3">
-        <div class="relative flex-1 max-w-md">
-            <input
-                type="text"
-                wire:model.live="searchQuery"
-                placeholder="Search companies, positions, notes..."
-                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 placeholder-gray-500 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            />
-            @if ($isSearching)
+    <div class="mb-6 flex flex-col gap-4">
+        <!-- Search and Filters Row -->
+        <div class="flex items-center gap-3 flex-wrap">
+            <!-- Search Input -->
+            <div class="relative flex-1 min-w-48">
+                <input
+                    type="text"
+                    wire:model.live="searchQuery"
+                    placeholder="Search companies, positions, notes..."
+                    class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 placeholder-gray-500 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
+                @if ($isSearching)
+                    <button
+                        type="button"
+                        wire:click="clearSearch"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                        aria-label="Clear search"
+                    >
+                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                @endif
+            </div>
+
+            <!-- Status Filters -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs font-semibold text-gray-600 uppercase">Filter by:</span>
+                
                 <button
                     type="button"
-                    wire:click="clearSearch"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
-                    aria-label="Clear search"
+                    wire:click="toggleStatusFilter('applied')"
+                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('applied', $statusFilters) ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
                 >
-                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
+                    Applied
                 </button>
-            @endif
+                
+                <button
+                    type="button"
+                    wire:click="toggleStatusFilter('waiting')"
+                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('waiting', $statusFilters) ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                >
+                    Waiting
+                </button>
+                
+                <button
+                    type="button"
+                    wire:click="toggleStatusFilter('interview')"
+                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('interview', $statusFilters) ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                >
+                    Interview
+                </button>
+                
+                <button
+                    type="button"
+                    wire:click="toggleStatusFilter('rejected')"
+                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('rejected', $statusFilters) ? 'bg-red-100 text-red-700 ring-2 ring-red-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                >
+                    Rejected
+                </button>
+                
+                <button
+                    type="button"
+                    wire:click="toggleStatusFilter('offer')"
+                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('offer', $statusFilters) ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                >
+                    Offer
+                </button>
+
+                @if (count($statusFilters) !== 5)
+                    <button
+                        type="button"
+                        wire:click="resetStatusFilters"
+                        class="rounded-lg px-3 py-1.5 text-xs font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+                    >
+                        Reset
+                    </button>
+                @endif
+            </div>
         </div>
+
+        <!-- Duplicates Alert -->
+        @if ($duplicateCount > 0)
+            <div class="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+                <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orange-200">
+                    <svg class="h-5 w-5 text-orange-700" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-orange-900">
+                        Found <span class="font-bold">{{ $duplicateCount }}</span> duplicate application{{ $duplicateCount !== 1 ? 's' : '' }}
+                    </p>
+                    <p class="text-xs text-orange-700 mt-0.5">
+                        Same company and position detected. Review and remove duplicates if needed.
+                    </p>
+                </div>
+            </div>
+        @endif
     </div>
 
     <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-5">
