@@ -25,6 +25,29 @@
         </button>
     </div>
 
+    <div class="mb-6 flex items-center gap-3">
+        <div class="relative flex-1 max-w-md">
+            <input
+                type="text"
+                wire:model.live="searchQuery"
+                placeholder="Search companies, positions, notes..."
+                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 placeholder-gray-500 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            />
+            @if ($isSearching)
+                <button
+                    type="button"
+                    wire:click="clearSearch"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                    aria-label="Clear search"
+                >
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            @endif
+        </div>
+    </div>
+
     <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-5">
 
         <div class="rounded-xl bg-white p-5 shadow">
@@ -97,6 +120,60 @@
                             <div class="text-sm font-semibold text-gray-900 uppercase">{{ $app->position }}</div>
                             <div class="text-sm text-gray-700">{{ $app->company }}</div>
                             <div class="mt-1 text-xs text-gray-500">Applied: {{ $app->applied_at?->format('d/m/Y') ?? '-' }}</div>
+                        </article>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    @endif
+
+    @if ($isSearching)
+        <div class="mb-8 rounded-2xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-blue-900">
+                    Search Results for &quot;{{ $searchQuery }}&quot;
+                </h2>
+                <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                    {{ $searchResults->count() }} result{{ $searchResults->count() !== 1 ? 's' : '' }}
+                </span>
+            </div>
+
+            @if ($searchResults->isEmpty())
+                <div class="rounded-xl border border-dashed border-blue-300 bg-white px-4 py-6 text-center text-sm text-blue-600">
+                    No applications found matching "{{ $searchQuery }}"
+                </div>
+            @else
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    @foreach ($searchResults as $app)
+                        <article class="rounded-xl border border-blue-200 bg-white p-4 shadow-sm hover:shadow-md transition" wire:key="search-result-{{ $app->id }}">
+                            <div class="mb-2 flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="text-sm font-semibold text-blue-700 uppercase">{{ $app->position }}</div>
+                                    <div class="text-sm text-gray-700">{{ $app->company }}</div>
+                                </div>
+                                @if ($app->deleted_at)
+                                    <span class="inline-flex rounded px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700">Archived</span>
+                                @endif
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500 space-y-1">
+                                @if ($app->city)
+                                    <div>📍 {{ $app->city }}</div>
+                                @endif
+                                @if ($app->location)
+                                    <div>🗺️ {{ $app->location }}</div>
+                                @endif
+                                @if ($app->applied_at)
+                                    <div>📅 Applied: {{ $app->applied_at->format('d/m/Y') }}</div>
+                                @endif
+                            </div>
+                            <div class="mt-3 flex gap-2">
+                                <button type="button" wire:click="editApplication({{ $app->id }})" class="flex-1 rounded-lg bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition">
+                                    Edit
+                                </button>
+                                <button type="button" wire:click="deleteApplication({{ $app->id }})" wire:confirm="Delete this application?" class="flex-1 rounded-lg bg-red-100 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-200 transition">
+                                    Delete
+                                </button>
+                            </div>
                         </article>
                     @endforeach
                 </div>
