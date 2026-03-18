@@ -25,6 +25,8 @@ class ApplicationsBoard extends Component
     public $showFavoritesOnly = false;
     public $showArchivedSection = false;
     public $kanbanOrientation = 'horizontal';
+    public $searchQuery = '';
+    public $isSearching = false;
 
     public $company;
     public $position;
@@ -285,6 +287,42 @@ class ApplicationsBoard extends Component
     }
 
     // =========================================================================
+    // Search
+    // =========================================================================
+
+    public function updatedSearchQuery($value): void
+    {
+        $this->isSearching = strlen(trim($value)) > 0;
+    }
+
+    public function clearSearch(): void
+    {
+        $this->searchQuery = '';
+        $this->isSearching = false;
+    }
+
+    private function matchesSearch(Application $app, string $query): bool
+    {
+        $lowerQuery = strtolower($query);
+
+        return str_contains(strtolower($app->company ?? ''), $lowerQuery)
+            || str_contains(strtolower($app->position ?? ''), $lowerQuery)
+            || str_contains(strtolower($app->city ?? ''), $lowerQuery)
+            || str_contains(strtolower($app->location ?? ''), $lowerQuery)
+            || str_contains(strtolower($app->job_url ?? ''), $lowerQuery)
+            || str_contains(strtolower($app->notes ?? ''), $lowerQuery);
+    }
+
+    private function filterBySearch($collection): \Illuminate\Support\Collection
+    {
+        if (!$this->isSearching || empty(trim($this->searchQuery))) {
+            return $collection;
+        }
+
+        return $collection->filter(fn (Application $app) => $this->matchesSearch($app, $this->searchQuery));
+    }
+
+    // =========================================================================
     // Render
     // =========================================================================
 
@@ -300,6 +338,33 @@ class ApplicationsBoard extends Component
         $archived   = $apps->where($statusField, 'archived');
         $activeApps = $this->resolveActiveApps($apps, $statusField, $hasFavoriteColumn);
 
+        // Apply search filter if searching
+        if ($this->isSearching) {
+            $allApps = $apps->merge($archived);
+            $searchResults = $this->filterBySearch($allApps);
+
+            return view('livewire.applications-board', [
+                'applied'           => collect(),
+                'waiting'           => collect(),
+                'interview'         => collect(),
+                'rejected'          => collect(),
+                'offer'             => collect(),
+                'archived'          => collect(),
+                'searchResults'     => $searchResults,
+                'total'             => $activeApps->count(),
+                'interviews'        => $activeApps->where($statusField, 'interview')->count(),
+                'offers'            => $activeApps->where($statusField, 'offer')->count(),
+                'archivedCount'     => $archived->count(),
+                'favorites'         => $hasFavoriteColumn ? $activeApps->where('is_favorite', true)->count() : 0,
+                'showFavoritesOnly' => $this->showFavoritesOnly,
+                'showArchivedSection' => $this->showArchivedSection,
+                'hasFavoriteColumn' => $hasFavoriteColumn,
+                'kanbanOrientation' => $this->kanbanOrientation,
+                'isSearching'       => $this->isSearching,
+                'searchQuery'       => $this->searchQuery,
+            ]);
+        }
+
         return view('livewire.applications-board', [
             'applied'           => $activeApps->where($statusField, 'applied'),
             'waiting'           => $activeApps->where($statusField, 'waiting'),
@@ -307,6 +372,7 @@ class ApplicationsBoard extends Component
             'rejected'          => $activeApps->where($statusField, 'rejected'),
             'offer'             => $activeApps->where($statusField, 'offer'),
             'archived'          => $archived,
+            'searchResults'     => collect(),
             'total'             => $activeApps->count(),
             'interviews'        => $activeApps->where($statusField, 'interview')->count(),
             'offers'            => $activeApps->where($statusField, 'offer')->count(),
@@ -316,6 +382,8 @@ class ApplicationsBoard extends Component
             'showArchivedSection' => $this->showArchivedSection,
             'hasFavoriteColumn' => $hasFavoriteColumn,
             'kanbanOrientation' => $this->kanbanOrientation,
+            'isSearching'       => $this->isSearching,
+            'searchQuery'       => $this->searchQuery,
         ]);
     }
 
