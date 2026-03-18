@@ -25,6 +25,29 @@
         </button>
     </div>
 
+    <div class="mb-6 flex items-center gap-3">
+        <div class="relative flex-1 max-w-md">
+            <input
+                type="text"
+                wire:model.live="searchQuery"
+                placeholder="Search companies, positions, notes..."
+                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 placeholder-gray-500 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            />
+            @if ($isSearching)
+                <button
+                    type="button"
+                    wire:click="clearSearch"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                    aria-label="Clear search"
+                >
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            @endif
+        </div>
+    </div>
+
     <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-5">
 
         <div class="rounded-xl bg-white p-5 shadow">
@@ -103,6 +126,12 @@
             @endif
         </div>
     @endif
+
+    @include('livewire.search-results', [
+        'searchResults' => $searchResults,
+        'searchQuery' => $searchQuery,
+        'isSearching' => $isSearching,
+    ])
 
     <div class="my-8 flex items-center" aria-hidden="true">
         <div class="h-px w-full bg-gray-300"></div>

@@ -217,8 +217,26 @@ h1 {
 
 .footer {
     color: #6b6b67;
+    border-top: 1px solid var(--line);
+    padding: 18px 0 28px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.footer-copy {
+    margin: 0;
     font-size: 0.86rem;
-    padding-bottom: 28px;
+}
+
+.footer-rights {
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #7e7b72;
 }
 
 @media (max-width: 950px) {
@@ -231,6 +249,11 @@ h1 {
     }
 
     .cta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .footer {
         flex-direction: column;
         align-items: flex-start;
     }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,9 +8,12 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
 </head>
+
 <body>
     <div class="container">
         <header class="topbar">
@@ -33,7 +37,8 @@
             <article class="panel">
                 <h1>Ditch spreadsheets. Track your job applications faster and smarter.</h1>
                 <p class="lead">
-                    Stop wasting hours on tedious manual data entry. Application Tracker automatically extracts job details from job post URLs and organizes them in one dashboard.
+                    Stop wasting hours on tedious manual data entry. Application Tracker automatically extracts job
+                    details from job post URLs and organizes them in one dashboard.
                 </p>
 
                 <div class="chips">
@@ -102,8 +107,12 @@
         </section>
 
         <footer class="footer">
-            Built for professionals who want a faster, structured and less stressful job application workflow.
+            <p class="footer-copy">
+                Built for professionals who want a faster, structured and less stressful job application workflow.
+            </p>
+            <p class="footer-rights">© 2026 Hired Flow. All rights reserved.</p>
         </footer>
     </div>
 </body>
+
 </html>
