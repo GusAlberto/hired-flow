@@ -50,79 +50,108 @@
                 @endif
             </div>
 
-            <!-- Status Filters -->
-            <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-semibold text-gray-600 uppercase">Filter by:</span>
-                
+            <!-- Status Filters Dropdown -->
+            <div class="relative" x-data="{ open: false }">
                 <button
                     type="button"
-                    wire:click="toggleStatusFilter('applied')"
-                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('applied', $statusFilters) ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
+                    @click="open = !open"
+                    class="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                    Applied
-                </button>
-                
-                <button
-                    type="button"
-                    wire:click="toggleStatusFilter('waiting')"
-                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('waiting', $statusFilters) ? 'bg-purple-100 text-purple-700 ring-2 ring-purple-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
-                >
-                    Waiting
-                </button>
-                
-                <button
-                    type="button"
-                    wire:click="toggleStatusFilter('interview')"
-                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('interview', $statusFilters) ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
-                >
-                    Interview
-                </button>
-                
-                <button
-                    type="button"
-                    wire:click="toggleStatusFilter('rejected')"
-                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('rejected', $statusFilters) ? 'bg-red-100 text-red-700 ring-2 ring-red-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
-                >
-                    Rejected
-                </button>
-                
-                <button
-                    type="button"
-                    wire:click="toggleStatusFilter('offer')"
-                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition {{ in_array('offer', $statusFilters) ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}"
-                >
-                    Offer
-                </button>
-
-                @if (count($statusFilters) !== 5)
-                    <button
-                        type="button"
-                        wire:click="resetStatusFilters"
-                        class="rounded-lg px-3 py-1.5 text-xs font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
-                    >
-                        Reset
-                    </button>
-                @endif
-            </div>
-        </div>
-
-        <!-- Duplicates Alert -->
-        @if ($duplicateCount > 0)
-            <div class="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
-                <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orange-200">
-                    <svg class="h-5 w-5 text-orange-700" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                     </svg>
+                    Filter ({{ count($statusFilters) }})
+                    <svg class="h-4 w-4 transition" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div
+                    x-show="open"
+                    @click.outside="open = false"
+                    class="absolute left-0 right-0 z-10 mt-2 w-56 rounded-xl border border-gray-200 bg-white shadow-lg"
+                >
+                    <div class="p-3 space-y-2">
+                        <!-- Applied -->
+                        <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-blue-50 transition">
+                            <input
+                                type="checkbox"
+                                @change="$wire.toggleStatusFilter('applied')"
+                                {{ in_array('applied', $statusFilters) ? 'checked' : '' }}
+                                class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span class="text-sm font-medium text-gray-700">
+                                Applied
+                            </span>
+                        </label>
+
+                        <!-- Waiting -->
+                        <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-purple-50 transition">
+                            <input
+                                type="checkbox"
+                                @change="$wire.toggleStatusFilter('waiting')"
+                                {{ in_array('waiting', $statusFilters) ? 'checked' : '' }}
+                                class="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            />
+                            <span class="text-sm font-medium text-gray-700">
+                                Waiting
+                            </span>
+                        </label>
+
+                        <!-- Interview -->
+                        <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-amber-50 transition">
+                            <input
+                                type="checkbox"
+                                @change="$wire.toggleStatusFilter('interview')"
+                                {{ in_array('interview', $statusFilters) ? 'checked' : '' }}
+                                class="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                            />
+                            <span class="text-sm font-medium text-gray-700">
+                                Interview
+                            </span>
+                        </label>
+
+                        <!-- Rejected -->
+                        <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-red-50 transition">
+                            <input
+                                type="checkbox"
+                                @change="$wire.toggleStatusFilter('rejected')"
+                                {{ in_array('rejected', $statusFilters) ? 'checked' : '' }}
+                                class="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                            />
+                            <span class="text-sm font-medium text-gray-700">
+                                Rejected
+                            </span>
+                        </label>
+
+                        <!-- Offer -->
+                        <label class="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-emerald-50 transition">
+                            <input
+                                type="checkbox"
+                                @change="$wire.toggleStatusFilter('offer')"
+                                {{ in_array('offer', $statusFilters) ? 'checked' : '' }}
+                                class="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                            />
+                            <span class="text-sm font-medium text-gray-700">
+                                Offer
+                            </span>
+                        </label>
+
+                        @if (count($statusFilters) !== 5)
+                            <div class="border-t border-gray-200 pt-2 mt-2">
+                                <button
+                                    type="button"
+                                    wire:click="resetStatusFilters"
+                                    @click="open = false"
+                                    class="w-full rounded-lg bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition"
+                                >
+                                    Reset Filters
+                                </button>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-orange-900">
-                        Found <span class="font-bold">{{ $duplicateCount }}</span> duplicate application{{ $duplicateCount !== 1 ? 's' : '' }}
-                    </p>
-                    <p class="text-xs text-orange-700 mt-0.5">
-                        Same company and position detected. Review and remove duplicates if needed.
-                    </p>
-                </div>
-            </div>
         @endif
     </div>
 
