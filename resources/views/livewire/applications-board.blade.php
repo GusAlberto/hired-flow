@@ -29,9 +29,9 @@
 
     <div class="mb-6 flex flex-wrap items-center gap-3 sm:flex-nowrap">
         <!-- Search Input -->
-        <div class="flex-grow min-w-[320px] relative">
+        <div class="relative w-full sm:w-[170px] sm:max-w-[170px] sm:flex-none">
             <input type="text" wire:model.live="searchQuery"
-                class="block h-12 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
 
             @if (trim($searchQuery ?? '') === '')
                 <div class="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 text-gray-400">
