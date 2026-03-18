@@ -346,6 +346,15 @@ class ApplicationsBoard extends Component
         $this->statusFilters = ['applied', 'waiting', 'interview', 'rejected', 'offer'];
     }
 
+    public function updateStatusFilters(string $value): void
+    {
+        if (empty($value)) {
+            $this->resetStatusFilters();
+        } else {
+            $this->statusFilters = [$value];
+        }
+    }
+
     private function filterByStatus($collection): \Illuminate\Support\Collection
     {
         if (empty($this->statusFilters)) {
