@@ -63,17 +63,23 @@
 
         <!-- Duplicates Badge -->
         @if ($duplicateCount > 0)
-            <div
-                class="flex items-center gap-2 px-3 py-2 bg-white border border-orange-200 rounded-lg text-sm font-medium text-orange-700 whitespace-nowrap hover:bg-orange-50 transition-colors">
+            <button type="button" wire:click="toggleDuplicatesFilter"
+                class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors {{ $showDuplicates ? 'border-orange-400 bg-orange-100 text-orange-800 ring-2 ring-orange-200' : 'border-orange-200 bg-white text-orange-700 hover:bg-orange-50' }}">
                 <svg class="h-4 w-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                         stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                 </svg>
-                <span>{{ $duplicateCount }} Duplicate{{ $duplicateCount !== 1 ? 's' : '' }}</span>
-            </div>
+                <span>{{ $duplicateCount }} duplicate group{{ $duplicateCount !== 1 ? 's' : '' }}</span>
+            </button>
         @endif
     </div>
+
+    @if ($showDuplicates)
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            Showing only duplicated applications. A card is marked as duplicated when it has the same key information as another one.
+        </div>
+    @endif
 
     <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-5">
         <div class="rounded-xl bg-white p-5 shadow">
@@ -204,7 +210,7 @@
 
                 <div id="{{ $status }}" class="min-h-24 space-y-3">
                     @foreach ($column['items'] as $app)
-                        <article class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm" data-id="{{ $app->id }}"
+                        <article class="card rounded-2xl border p-4 shadow-sm {{ in_array($app->id, $duplicateIds ?? [], true) ? 'border-red-300 bg-red-50/30 ring-1 ring-red-200' : 'border-gray-200 bg-white' }}" data-id="{{ $app->id }}"
                             wire:key="application-{{ $app->id }}" x-data="{ expanded: false }">
                             <div class="mb-3 flex items-start justify-between gap-3">
                                 <div class="min-w-0 flex-1">
@@ -276,6 +282,11 @@
                                     <span class="font-medium">Location:</span>
                                     {{ $app->location ?: 'Not informed' }}
                                 </div>
+                                @if ($showDuplicates && in_array($app->id, $duplicateIds ?? [], true))
+                                    <div class="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs text-red-700">
+                                        {{ $duplicateReasons[$app->id] ?? 'Duplicate by matching data with another application.' }}
+                                    </div>
+                                @endif
                                 <div class="flex items-center justify-between gap-3">
                                     <div>
                                         <span class="font-medium">Personal score:</span>

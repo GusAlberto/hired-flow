@@ -355,6 +355,11 @@ class ApplicationsBoard extends Component
         }
     }
 
+    public function toggleDuplicatesFilter(): void
+    {
+        $this->showDuplicates = !$this->showDuplicates;
+    }
+
     private function filterByStatus($collection): \Illuminate\Support\Collection
     {
         if (empty($this->statusFilters)) {
@@ -369,15 +374,61 @@ class ApplicationsBoard extends Component
     // Duplicate Detection
     // =========================================================================
 
-    private function findDuplicates($collection): \Illuminate\Support\Collection
+    private function duplicateKey(Application $app): string
     {
-        $grouped = $collection->groupBy(function ($app) {
-            // Normalize the key: company + position (lowercase, trimmed)
-            return strtolower(trim($app->company ?? '')) . '|' . strtolower(trim($app->position ?? ''));
-        });
+        return strtolower(trim($app->company ?? '')) . '|' . strtolower(trim($app->position ?? ''));
+    }
 
-        // Keep only groups with more than one item
-        return $grouped->filter(fn ($group) => $group->count() > 1)->flatten();
+    private function findDuplicateGroups($collection): \Illuminate\Support\Collection
+    {
+        return $collection
+            ->groupBy(fn (Application $app) => $this->duplicateKey($app))
+            ->filter(fn ($group, $key) => $key !== '|' && $group->count() > 1);
+    }
+
+    private function getDuplicateReasons($duplicateGroups): array
+    {
+        $reasons = [];
+
+        foreach ($duplicateGroups as $group) {
+            $first = $group->first();
+
+            $fields = [
+                'company' => 'company',
+                'position' => 'position',
+                'city' => 'city',
+                'location' => 'location',
+                'job_url' => 'job URL',
+            ];
+
+            $sameFields = [];
+
+            foreach ($fields as $field => $label) {
+                $baseValue = strtolower(trim((string) ($first->{$field} ?? '')));
+
+                if ($baseValue === '') {
+                    continue;
+                }
+
+                $allMatch = $group->every(function (Application $app) use ($field, $baseValue) {
+                    return strtolower(trim((string) ($app->{$field} ?? ''))) === $baseValue;
+                });
+
+                if ($allMatch) {
+                    $sameFields[] = $label;
+                }
+            }
+
+            $reason = empty($sameFields)
+                ? 'Possible duplicate by very similar information.'
+                : 'Duplicate because these fields are equal: ' . implode(', ', $sameFields) . '.';
+
+            foreach ($group as $app) {
+                $reasons[$app->id] = $reason;
+            }
+        }
+
+        return $reasons;
     }
 
     // =========================================================================
@@ -399,9 +450,17 @@ class ApplicationsBoard extends Component
         // Apply status filters
         $filteredApps = $this->filterByStatus($activeApps);
 
-        // Detect duplicates in active apps
-        $duplicates = $this->findDuplicates($filteredApps);
-        $duplicateCount = $duplicates->count();
+        // Detect duplicate groups in active apps
+        $duplicateGroups = $this->findDuplicateGroups($filteredApps);
+        $duplicateIds = $duplicateGroups->flatten()->pluck('id')->all();
+        $duplicateReasons = $this->getDuplicateReasons($duplicateGroups);
+        $duplicateCount = $duplicateGroups->count();
+
+        if ($this->showDuplicates) {
+            $filteredApps = $filteredApps->filter(
+                fn (Application $app) => in_array($app->id, $duplicateIds, true)
+            );
+        }
 
         // Apply search filter if searching
         if ($this->isSearching) {
@@ -422,7 +481,9 @@ class ApplicationsBoard extends Component
                 'archivedCount'     => $archived->count(),
                 'favorites'         => $hasFavoriteColumn ? $filteredApps->where('is_favorite', true)->count() : 0,
                 'duplicateCount'    => $duplicateCount,
-                'duplicates'        => $duplicates,
+                'duplicateIds'      => $duplicateIds,
+                'duplicateReasons'  => $duplicateReasons,
+                'showDuplicates'    => $this->showDuplicates,
                 'showFavoritesOnly' => $this->showFavoritesOnly,
                 'showArchivedSection' => $this->showArchivedSection,
                 'hasFavoriteColumn' => $hasFavoriteColumn,
@@ -447,7 +508,9 @@ class ApplicationsBoard extends Component
             'archivedCount'     => $archived->count(),
             'favorites'         => $hasFavoriteColumn ? $filteredApps->where('is_favorite', true)->count() : 0,
             'duplicateCount'    => $duplicateCount,
-            'duplicates'        => $duplicates,
+            'duplicateIds'      => $duplicateIds,
+            'duplicateReasons'  => $duplicateReasons,
+            'showDuplicates'    => $this->showDuplicates,
             'showFavoritesOnly' => $this->showFavoritesOnly,
             'showArchivedSection' => $this->showArchivedSection,
             'hasFavoriteColumn' => $hasFavoriteColumn,
