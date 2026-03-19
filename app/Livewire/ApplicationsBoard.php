@@ -27,6 +27,8 @@ class ApplicationsBoard extends Component
     public $kanbanOrientation = 'horizontal';
     public $searchQuery = '';
     public $isSearching = false;
+    public $statusFilters = [];
+    public $showDuplicates = false;
 
     public $company;
     public $position;
@@ -76,6 +78,9 @@ class ApplicationsBoard extends Component
         $this->kanbanOrientation = in_array($orientation, ['horizontal', 'vertical'], true)
             ? $orientation
             : 'horizontal';
+        
+        // Initialize status filters - all statuses selected by default
+        $this->statusFilters = ['applied', 'waiting', 'interview', 'rejected', 'offer'];
     }
 
     /** Inject the service via Livewire's boot hook (not serialised between requests). */
@@ -323,6 +328,110 @@ class ApplicationsBoard extends Component
     }
 
     // =========================================================================
+    // Status Filters
+    // =========================================================================
+
+    public function toggleStatusFilter(string $status): void
+    {
+        if (in_array($status, $this->statusFilters, true)) {
+            $this->statusFilters = array_filter($this->statusFilters, fn ($s) => $s !== $status);
+        } else {
+            $this->statusFilters[] = $status;
+            sort($this->statusFilters);
+        }
+    }
+
+    public function resetStatusFilters(): void
+    {
+        $this->statusFilters = ['applied', 'waiting', 'interview', 'rejected', 'offer'];
+    }
+
+    public function updateStatusFilters(string $value): void
+    {
+        if (empty($value)) {
+            $this->resetStatusFilters();
+        } else {
+            $this->statusFilters = [$value];
+        }
+    }
+
+    public function toggleDuplicatesFilter(): void
+    {
+        $this->showDuplicates = !$this->showDuplicates;
+    }
+
+    private function filterByStatus($collection): \Illuminate\Support\Collection
+    {
+        if (empty($this->statusFilters)) {
+            return $collection;
+        }
+
+        $statusField = $this->hasStageColumn() ? 'stage' : 'status';
+        return $collection->filter(fn (Application $app) => in_array($app->{$statusField}, $this->statusFilters, true));
+    }
+
+    // =========================================================================
+    // Duplicate Detection
+    // =========================================================================
+
+    private function duplicateKey(Application $app): string
+    {
+        return strtolower(trim($app->company ?? '')) . '|' . strtolower(trim($app->position ?? ''));
+    }
+
+    private function findDuplicateGroups($collection): \Illuminate\Support\Collection
+    {
+        return $collection
+            ->groupBy(fn (Application $app) => $this->duplicateKey($app))
+            ->filter(fn ($group, $key) => $key !== '|' && $group->count() > 1);
+    }
+
+    private function getDuplicateReasons($duplicateGroups): array
+    {
+        $reasons = [];
+
+        foreach ($duplicateGroups as $group) {
+            $first = $group->first();
+
+            $fields = [
+                'company' => 'company',
+                'position' => 'position',
+                'city' => 'city',
+                'location' => 'location',
+                'job_url' => 'job URL',
+            ];
+
+            $sameFields = [];
+
+            foreach ($fields as $field => $label) {
+                $baseValue = strtolower(trim((string) ($first->{$field} ?? '')));
+
+                if ($baseValue === '') {
+                    continue;
+                }
+
+                $allMatch = $group->every(function (Application $app) use ($field, $baseValue) {
+                    return strtolower(trim((string) ($app->{$field} ?? ''))) === $baseValue;
+                });
+
+                if ($allMatch) {
+                    $sameFields[] = $label;
+                }
+            }
+
+            $reason = empty($sameFields)
+                ? 'Possible duplicate by very similar information.'
+                : 'Duplicate because these fields are equal: ' . implode(', ', $sameFields) . '.';
+
+            foreach ($group as $app) {
+                $reasons[$app->id] = $reason;
+            }
+        }
+
+        return $reasons;
+    }
+
+    // =========================================================================
     // Render
     // =========================================================================
 
@@ -338,9 +447,24 @@ class ApplicationsBoard extends Component
         $archived   = $apps->where($statusField, 'archived');
         $activeApps = $this->resolveActiveApps($apps, $statusField, $hasFavoriteColumn);
 
+        // Apply status filters
+        $filteredApps = $this->filterByStatus($activeApps);
+
+        // Detect duplicate groups in active apps
+        $duplicateGroups = $this->findDuplicateGroups($filteredApps);
+        $duplicateIds = $duplicateGroups->flatten()->pluck('id')->all();
+        $duplicateReasons = $this->getDuplicateReasons($duplicateGroups);
+        $duplicateCount = $duplicateGroups->count();
+
+        if ($this->showDuplicates) {
+            $filteredApps = $filteredApps->filter(
+                fn (Application $app) => in_array($app->id, $duplicateIds, true)
+            );
+        }
+
         // Apply search filter if searching
         if ($this->isSearching) {
-            $allApps = $apps->merge($archived);
+            $allApps = $filteredApps->merge($archived);
             $searchResults = $this->filterBySearch($allApps);
 
             return view('livewire.applications-board', [
@@ -351,39 +475,49 @@ class ApplicationsBoard extends Component
                 'offer'             => collect(),
                 'archived'          => collect(),
                 'searchResults'     => $searchResults,
-                'total'             => $activeApps->count(),
-                'interviews'        => $activeApps->where($statusField, 'interview')->count(),
-                'offers'            => $activeApps->where($statusField, 'offer')->count(),
+                'total'             => $filteredApps->count(),
+                'interviews'        => $filteredApps->where($statusField, 'interview')->count(),
+                'offers'            => $filteredApps->where($statusField, 'offer')->count(),
                 'archivedCount'     => $archived->count(),
-                'favorites'         => $hasFavoriteColumn ? $activeApps->where('is_favorite', true)->count() : 0,
+                'favorites'         => $hasFavoriteColumn ? $filteredApps->where('is_favorite', true)->count() : 0,
+                'duplicateCount'    => $duplicateCount,
+                'duplicateIds'      => $duplicateIds,
+                'duplicateReasons'  => $duplicateReasons,
+                'showDuplicates'    => $this->showDuplicates,
                 'showFavoritesOnly' => $this->showFavoritesOnly,
                 'showArchivedSection' => $this->showArchivedSection,
                 'hasFavoriteColumn' => $hasFavoriteColumn,
                 'kanbanOrientation' => $this->kanbanOrientation,
                 'isSearching'       => $this->isSearching,
                 'searchQuery'       => $this->searchQuery,
+                'statusFilters'     => $this->statusFilters,
             ]);
         }
 
         return view('livewire.applications-board', [
-            'applied'           => $activeApps->where($statusField, 'applied'),
-            'waiting'           => $activeApps->where($statusField, 'waiting'),
-            'interview'         => $activeApps->where($statusField, 'interview'),
-            'rejected'          => $activeApps->where($statusField, 'rejected'),
-            'offer'             => $activeApps->where($statusField, 'offer'),
+            'applied'           => $filteredApps->where($statusField, 'applied'),
+            'waiting'           => $filteredApps->where($statusField, 'waiting'),
+            'interview'         => $filteredApps->where($statusField, 'interview'),
+            'rejected'          => $filteredApps->where($statusField, 'rejected'),
+            'offer'             => $filteredApps->where($statusField, 'offer'),
             'archived'          => $archived,
             'searchResults'     => collect(),
-            'total'             => $activeApps->count(),
-            'interviews'        => $activeApps->where($statusField, 'interview')->count(),
-            'offers'            => $activeApps->where($statusField, 'offer')->count(),
+            'total'             => $filteredApps->count(),
+            'interviews'        => $filteredApps->where($statusField, 'interview')->count(),
+            'offers'            => $filteredApps->where($statusField, 'offer')->count(),
             'archivedCount'     => $archived->count(),
-            'favorites'         => $hasFavoriteColumn ? $activeApps->where('is_favorite', true)->count() : 0,
+            'favorites'         => $hasFavoriteColumn ? $filteredApps->where('is_favorite', true)->count() : 0,
+            'duplicateCount'    => $duplicateCount,
+            'duplicateIds'      => $duplicateIds,
+            'duplicateReasons'  => $duplicateReasons,
+            'showDuplicates'    => $this->showDuplicates,
             'showFavoritesOnly' => $this->showFavoritesOnly,
             'showArchivedSection' => $this->showArchivedSection,
             'hasFavoriteColumn' => $hasFavoriteColumn,
             'kanbanOrientation' => $this->kanbanOrientation,
             'isSearching'       => $this->isSearching,
             'searchQuery'       => $this->searchQuery,
+            'statusFilters'     => $this->statusFilters,
         ]);
     }
 
