@@ -158,32 +158,35 @@
 
     <x-modals.create-application-modal :isOpen="$isCreateFormOpen" :company="$company" :position="$position" :city="$city" :location="$location" :appliedAt="$applied_at" :jobUrl="$job_url" :personalScore="$personal_score" :salaryOffered="$salary_offered" :salaryExpected="$salary_expected" />
 
-    <div class="mb-4 flex justify-end">
-        <button type="button" wire:click="toggleKanbanOrientation" wire:loading.attr="disabled"
-            wire:loading.class="cursor-not-allowed opacity-60" wire:target="toggleKanbanOrientation"
-            aria-label="Toggle kanban orientation"
-            class="group relative inline-flex h-14 w-14 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100">
-            <svg class="h-5 w-5 transition-transform duration-300 ease-out"
-                style="transform: rotate({{ $kanbanOrientation === 'vertical' ? 90 : 0 }}deg)" viewBox="0 0 24 24"
-                fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M8 7H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                    stroke-linejoin="round" />
-                <path d="M16 4L19 7L16 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                    stroke-linejoin="round" />
-                <path d="M16 17H5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                    stroke-linejoin="round" />
-                <path d="M8 14L5 17L8 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                    stroke-linejoin="round" />
-            </svg>
+    <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="mb-4 text-center text-2xl font-black tracking-wide text-gray-800">Jobs</h2>
 
-            <span
-                class="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-                {{ $kanbanOrientation === 'horizontal' ? 'Switch to vertical view' : 'Switch to horizontal view' }}
-            </span>
-        </button>
-    </div>
+        <div class="mb-4 flex justify-end">
+            <button type="button" wire:click="toggleKanbanOrientation" wire:loading.attr="disabled"
+                wire:loading.class="cursor-not-allowed opacity-60" wire:target="toggleKanbanOrientation"
+                aria-label="Toggle kanban orientation"
+                class="group relative inline-flex h-14 w-14 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100">
+                <svg class="h-5 w-5 transition-transform duration-300 ease-out"
+                    style="transform: rotate({{ $kanbanOrientation === 'vertical' ? 90 : 0 }}deg)" viewBox="0 0 24 24"
+                    fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M8 7H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M16 4L19 7L16 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M16 17H5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M8 14L5 17L8 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
 
-    <div class="grid grid-cols-1 gap-6 {{ $kanbanOrientation === 'horizontal' ? 'xl:grid-cols-5' : '' }}">
+                <span
+                    class="pointer-events-none absolute right-0 top-full z-20 mt-2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                    {{ $kanbanOrientation === 'horizontal' ? 'Switch to vertical view' : 'Switch to horizontal view' }}
+                </span>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 {{ $kanbanOrientation === 'horizontal' ? 'xl:grid-cols-5' : '' }}">
         @foreach ($columns as $status => $column)
             <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
                 <div class="mb-3 flex items-center justify-between gap-3">
@@ -358,6 +361,7 @@
                 </div>
             </div>
         @endforeach
+        </div>
     </div>
 
     <x-modals.edit-application-modal :isOpen="$isEditModalOpen" :company="$editCompany" :position="$editPosition" :city="$editCity"
