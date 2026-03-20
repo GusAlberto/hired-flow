@@ -50,12 +50,17 @@
         </div>
 
         <div class="overflow-y-auto bg-slate-50 px-5 py-5 lg:px-7">
+            @php
+                $totalSections = $editingIsInterview ? 4 : 3;
+                $sectionCounter = 0;
+            @endphp
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <div class="space-y-6 lg:col-span-2">
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
+                        @php $sectionCounter++; @endphp
                         <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-base font-bold text-slate-900">Role Information</h3>
-                            <span class="text-xs font-medium text-slate-400">{{ $editingIsInterview ? '1/4' : '1/3' }}</span>
+                            <span class="text-xs font-medium text-slate-400">{{ $sectionCounter }}/{{ $totalSections }}</span>
                         </div>
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
@@ -106,9 +111,10 @@
                     </section>
 
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
+                        @php $sectionCounter++; @endphp
                         <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-base font-bold text-slate-900">Application Details</h3>
-                            <span class="text-xs font-medium text-slate-400">{{ $editingIsInterview ? '2/4' : '2/3' }}</span>
+                            <span class="text-xs font-medium text-slate-400">{{ $sectionCounter }}/{{ $totalSections }}</span>
                         </div>
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
@@ -150,9 +156,10 @@
                     </section>
 
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
+                        @php $sectionCounter++; @endphp
                         <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-base font-bold text-slate-900">Internal Notes</h3>
-                            <span class="text-xs font-medium text-slate-400">{{ $editingIsInterview ? '3/4' : '3/3' }}</span>
+                            <span class="text-xs font-medium text-slate-400">{{ $sectionCounter }}/{{ $totalSections }}</span>
                         </div>
                         <textarea placeholder="Notes" wire:model.defer="editNotes" rows="4"
                             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"></textarea>
@@ -161,9 +168,10 @@
 
                     @if ($editingIsInterview)
                     <section class="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
+                        @php $sectionCounter++; @endphp
                         <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-base font-bold text-slate-900">Interview details</h3>
-                            <span class="text-xs font-medium text-slate-400">4/4</span>
+                            <span class="text-xs font-medium text-slate-400">{{ $sectionCounter }}/{{ $totalSections }}</span>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
