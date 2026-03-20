@@ -232,7 +232,7 @@
                                             $isDuplicate = in_array($app->id, $duplicateIds ?? [], true);
                                         @endphp
                                         <div class="mt-2 text-xs text-gray-400">
-                                            Added: {{ $app->applied_at?->format('d/m/Y') }}
+                                            Applied: {{ $app->applied_at?->format('d/m/Y') }}
                                         </div>
                                     </div>
 
