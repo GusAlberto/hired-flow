@@ -415,6 +415,10 @@
                         return
                     }
 
+                    const orderedIds = Array.from(evt.to.querySelectorAll('.card'))
+                        .map((card) => Number(card.dataset.id))
+                        .filter(Boolean)
+
                     if (evt.from.id !== 'interview' && newStatus === 'interview') {
                         const referenceNode = evt.from.children[evt.oldIndex] ?? null
                         evt.from.insertBefore(evt.item, referenceNode)
@@ -428,7 +432,8 @@
                     // Livewire v3/v4: dispatch with named payload { id, status }
                     Livewire.dispatch('moveApplication', {
                         id: id,
-                        status: newStatus
+                        status: newStatus,
+                        orderedIds: orderedIds
                     })
                 }
             })

@@ -227,7 +227,7 @@ class ApplicationsBoard extends Component
     // =========================================================================
 
     #[On('moveApplication')]
-    public function moveApplication(?int $id = null, ?string $status = null): void
+    public function moveApplication(?int $id = null, ?string $status = null, array $orderedIds = []): void
     {
         if (!$id || !$status) {
             return;
@@ -246,9 +246,17 @@ class ApplicationsBoard extends Component
             return;
         }
 
+        $previousStatus = $application->status;
+
         $this->service->move($application, $status);
 
-        session()->flash('status', 'Application moved successfully.');
+        if (!empty($orderedIds)) {
+            $this->service->reorderForUserStatus(Auth::id(), $status, $orderedIds);
+        }
+
+        if ($previousStatus !== $status) {
+            session()->flash('status', 'Application moved successfully.');
+        }
     }
 
     // =========================================================================
