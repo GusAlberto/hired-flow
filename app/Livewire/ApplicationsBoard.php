@@ -646,7 +646,7 @@ class ApplicationsBoard extends Component
             'location'         => [$this->hasLocationColumn() ? 'required' : 'nullable', 'string', 'max:255'],
             'applied_at'       => ['required', 'date'],
             'job_url'          => ['nullable', 'string', 'max:255'],
-            'personal_score'   => ['nullable', 'integer', 'between:0,10'],
+            'personal_score'   => ['nullable', 'numeric', 'between:0,10'],
             'salary_offered'   => ['nullable', 'numeric', 'min:0'],
             'salary_expected'  => ['nullable', 'numeric', 'min:0'],
         ];
@@ -661,7 +661,7 @@ class ApplicationsBoard extends Component
             'editLocation'         => [$this->hasLocationColumn() ? 'required' : 'nullable', 'string', 'max:255'],
             'editAppliedAt'        => ['required', 'date'],
             'editJobUrl'           => ['nullable', 'string', 'max:255'],
-            'editPersonalScore'    => ['nullable', 'integer', 'between:0,10'],
+            'editPersonalScore'    => ['nullable', 'numeric', 'between:0,10'],
             'editSalaryOffered'    => ['nullable', 'numeric', 'min:0'],
             'editSalaryExpected'   => ['nullable', 'numeric', 'min:0'],
             'editNotes'            => ['nullable', 'string'],

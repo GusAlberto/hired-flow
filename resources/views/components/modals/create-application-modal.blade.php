@@ -102,8 +102,8 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Personal score (0-10)</label>
-                                <input type="number" min="0" max="10" step="1" inputmode="numeric" wire:model.live="personal_score" placeholder="8"
-                                    oninput="if (this.value !== '') { const v = Number(this.value); this.value = Number.isFinite(v) ? Math.min(10, Math.max(0, Math.trunc(v))) : ''; }"
+                                <input type="number" min="0" max="10" step="0.1" inputmode="decimal" wire:model.live="personal_score" placeholder="8.5"
+                                    oninput="if (this.value !== '') { const v = Number(this.value); this.value = Number.isFinite(v) ? Math.min(10, Math.max(0, v)) : ''; }"
                                     class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
                                 @error('personal_score') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
