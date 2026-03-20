@@ -181,6 +181,14 @@ class ApplicationsBoard extends Component
             return;
         }
 
+        // For interview transitions, always collect date/time through interview modal.
+        if ($nextStatus === 'interview') {
+            $applicationId = $application->id;
+            $this->closeEditModal();
+            $this->prepareInterviewMove($applicationId);
+            return;
+        }
+
         $this->service->move($application, $nextStatus);
 
         session()->flash('status', 'Application moved to next stage successfully.');
