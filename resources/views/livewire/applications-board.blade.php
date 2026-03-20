@@ -191,7 +191,7 @@
 
         <div class="grid grid-cols-1 gap-6 {{ $kanbanOrientation === 'horizontal' ? 'xl:grid-cols-5' : '' }}">
             @foreach ($columns as $status => $column)
-                <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div data-dropzone class="rounded-2xl border border-gray-200 bg-gray-50 p-4 transition-colors duration-150">
                     <div class="mb-3 flex items-center justify-between gap-3">
                         <h2 class="font-bold text-gray-900">{{ $column['label'] }}</h2>
                         <span
@@ -203,7 +203,7 @@
                     <div id="{{ $status }}" class="min-h-24 space-y-3">
                         @foreach ($column['items'] as $app)
                             <article
-                                class="card rounded-2xl border p-4 shadow-sm {{ in_array($app->id, $duplicateIds ?? [], true) ? 'border-red-300 bg-red-50/30 ring-1 ring-red-200' : 'border-gray-200 bg-white' }}"
+                                class="card rounded-2xl border p-4 shadow-sm {{ in_array($app->id, $duplicateIds ?? [], true) ? 'border-red-300 bg-red-50/30' : 'border-gray-200 bg-white' }}"
                                 data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}"
                                 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"
                                 x-data="{ expanded: false }">
@@ -390,6 +390,30 @@
 
 <script>
     function initSortables() {
+        const receivingColumnClasses = ['bg-sky-100/60', 'border-sky-300']
+
+        function clearReceivingListHover() {
+            ['applied', 'waiting', 'interview', 'rejected', 'offer'].forEach((status) => {
+                const list = document.getElementById(status)
+                if (!list) return
+
+                const column = list.closest('[data-dropzone]')
+                if (!column) return
+
+                column.classList.remove(...receivingColumnClasses)
+            })
+        }
+
+        function setReceivingListHover(targetList) {
+            clearReceivingListHover()
+            if (!targetList) return
+
+            const column = targetList.closest('[data-dropzone]')
+            if (!column) return
+
+            column.classList.add(...receivingColumnClasses)
+        }
+
         ['applied', 'waiting', 'interview', 'rejected', 'offer'].forEach(status => {
             const el = document.getElementById(status)
             if (!el) return
@@ -403,7 +427,15 @@
                 draggable: '.card',
                 filter: 'details, summary, button',
                 preventOnFilter: false,
+                onStart: function() {
+                    clearReceivingListHover()
+                },
+                onMove: function(evt) {
+                    setReceivingListHover(evt?.to)
+                },
                 onEnd: function(evt) {
+                    clearReceivingListHover()
+
                     if (!evt?.item?.dataset) {
                         return
                     }
