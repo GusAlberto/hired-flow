@@ -291,7 +291,7 @@
                                         {{ $app->city ?: 'Not informed' }}
                                     </div>
                                     <div>
-                                        <span class="font-medium">Location:</span>
+                                        <span class="font-medium">Work model:</span>
                                         {{ $app->location ?: 'Not informed' }}
                                     </div>
                                     

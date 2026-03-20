@@ -41,7 +41,7 @@ class Application extends Model
         'is_favorite' => 'boolean',
         'interview_date' => 'date',
         'interview_is_remote' => 'boolean',
-        'personal_score' => 'integer',
+        'personal_score' => 'decimal:1',
         'salary_offered' => 'decimal:2',
         'salary_expected' => 'decimal:2',
     ];

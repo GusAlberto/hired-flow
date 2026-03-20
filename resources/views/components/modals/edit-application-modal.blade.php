@@ -48,7 +48,7 @@
                         </div>
 
                         <div>
-                            <input type="text" placeholder="Location" wire:model.defer="editLocation" class="w-full border rounded px-3 py-2" />
+                            <input type="text" placeholder="Work model" wire:model.defer="editLocation" class="w-full border rounded px-3 py-2" />
                             @error('editLocation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -63,7 +63,9 @@
                         </div>
 
                         <div>
-                            <input type="number" min="0" max="10" step="1" placeholder="Personal score (0-10)" wire:model.defer="editPersonalScore" class="w-full border rounded px-3 py-2" />
+                            <input type="number" min="0" max="10" step="0.1" inputmode="decimal" placeholder="Personal score (0-10)" wire:model.defer="editPersonalScore"
+                                oninput="if (this.value !== '') { const v = Number(this.value); this.value = Number.isFinite(v) ? Math.min(10, Math.max(0, v)) : ''; }"
+                                class="w-full border rounded px-3 py-2" />
                             @error('editPersonalScore') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
 
