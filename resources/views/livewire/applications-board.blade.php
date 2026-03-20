@@ -390,7 +390,7 @@
 
 <script>
     function initSortables() {
-        const receivingColumnClasses = ['bg-sky-100/60', 'border-sky-300']
+        const receivingColumnClasses = ['bg-gray-200/70', 'border-gray-500']
 
         function clearReceivingListHover() {
             ['applied', 'waiting', 'interview', 'rejected', 'offer'].forEach((status) => {
