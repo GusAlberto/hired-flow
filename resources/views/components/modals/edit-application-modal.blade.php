@@ -195,11 +195,11 @@
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
                         <h3 class="mb-4 text-base font-bold text-slate-900">Quick Actions</h3>
                         <div class="space-y-3">
-                            <button type="button"
+                            <button type="button" wire:click="moveEditingApplicationToNextStage"
                                 class="flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-800">
                                 Move to Next Stage
                             </button>
-                            <button type="button"
+                            <button type="button" wire:click="archiveEditingApplication"
                                 class="flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200">
                                 Archive Application
                             </button>

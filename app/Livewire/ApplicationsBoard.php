@@ -154,6 +154,57 @@ class ApplicationsBoard extends Component
         $this->resetEditForm();
     }
 
+    public function moveEditingApplicationToNextStage(): void
+    {
+        if (!$this->editingApplicationId) {
+            return;
+        }
+
+        $application = $this->service->findForUser($this->editingApplicationId, Auth::id());
+
+        if (!$application) {
+            return;
+        }
+
+        $currentStatus = $this->resolveStatus($application);
+
+        $nextStageMap = [
+            'applied' => 'waiting',
+            'waiting' => 'interview',
+            'interview' => 'offer',
+        ];
+
+        $nextStatus = $nextStageMap[$currentStatus] ?? null;
+
+        if (!$nextStatus) {
+            session()->flash('status', 'This application is already in the final stage.');
+            return;
+        }
+
+        $this->service->move($application, $nextStatus);
+
+        session()->flash('status', 'Application moved to next stage successfully.');
+        $this->closeEditModal();
+    }
+
+    public function archiveEditingApplication(): void
+    {
+        if (!$this->editingApplicationId) {
+            return;
+        }
+
+        $application = $this->service->findForUser($this->editingApplicationId, Auth::id());
+
+        if (!$application) {
+            return;
+        }
+
+        $this->service->move($application, 'archived');
+
+        session()->flash('status', 'Application archived successfully.');
+        $this->closeEditModal();
+    }
+
     // =========================================================================
     // Delete
     // =========================================================================
@@ -561,6 +612,15 @@ class ApplicationsBoard extends Component
                 $application->stage = self::LEGACY_STAGE_MAP[$application->stage];
             }
         });
+    }
+
+    private function resolveStatus(Application $application): string
+    {
+        $status = $this->hasStageColumn()
+            ? ($application->stage ?: $application->status)
+            : $application->status;
+
+        return self::LEGACY_STAGE_MAP[$status] ?? $status;
     }
 
     private function fillEditForm(Application $application): void
