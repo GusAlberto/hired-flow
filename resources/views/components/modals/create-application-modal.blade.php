@@ -68,9 +68,23 @@
                             </div>
 
                             <div>
-                                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Location</label>
-                                <input type="text" wire:model.live="location" placeholder="Hybrid"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Work model</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" wire:click="$set('location', 'In person')"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm {{ ($location ?? '') === 'In person' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400' }}">
+                                        In person
+                                    </button>
+
+                                    <button type="button" wire:click="$set('location', 'Remote')"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm {{ ($location ?? '') === 'Remote' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400' }}">
+                                        Remote
+                                    </button>
+
+                                    <button type="button" wire:click="$set('location', 'Hybrid')"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm {{ ($location ?? '') === 'Hybrid' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400' }}">
+                                        Hybrid
+                                    </button>
+                                </div>
                                 @error('location') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </div>
