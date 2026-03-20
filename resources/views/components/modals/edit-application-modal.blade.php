@@ -76,9 +76,26 @@
                             </div>
 
                             <div>
-                                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Work model</label>
-                                <input type="text" placeholder="Work model" wire:model.defer="editLocation"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Work model</label>
+                                <div x-data="{ workModel: @entangle('editLocation').live }" class="flex flex-wrap gap-2">
+                                    <button type="button" @click="workModel = 'In person'"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm"
+                                        :class="workModel === 'In person' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'">
+                                        In person
+                                    </button>
+
+                                    <button type="button" @click="workModel = 'Remote'"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm"
+                                        :class="workModel === 'Remote' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'">
+                                        Remote
+                                    </button>
+
+                                    <button type="button" @click="workModel = 'Hybrid'"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm"
+                                        :class="workModel === 'Hybrid' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'">
+                                        Hybrid
+                                    </button>
+                                </div>
                                 @error('editLocation') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </div>
