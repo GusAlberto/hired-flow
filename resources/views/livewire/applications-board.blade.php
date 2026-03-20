@@ -50,7 +50,6 @@
                 </svg> --}}
             </div>
         </div>
-
     </div>
 
     <x-dashboard.container :showDuplicates="$showDuplicates">
@@ -206,6 +205,7 @@
                             <article
                                 class="card rounded-2xl border p-4 shadow-sm {{ in_array($app->id, $duplicateIds ?? [], true) ? 'border-red-300 bg-red-50/30 ring-1 ring-red-200' : 'border-gray-200 bg-white' }}"
                                 data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}"
+                                style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"
                                 x-data="{ expanded: false }">
                                 <div class="mb-3 flex items-start justify-between gap-3">
                                     <div class="min-w-0 flex-1">
