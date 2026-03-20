@@ -69,19 +69,22 @@
 
                             <div>
                                 <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Work model</label>
-                                <div class="flex flex-wrap gap-2">
-                                    <button type="button" wire:click="$set('location', 'In person')"
-                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm {{ ($location ?? '') === 'In person' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400' }}">
+                                <div x-data="{ workModel: @entangle('location').live }" class="flex flex-wrap gap-2">
+                                    <button type="button" @click="workModel = 'In person'"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm"
+                                        :class="workModel === 'In person' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'">
                                         In person
                                     </button>
 
-                                    <button type="button" wire:click="$set('location', 'Remote')"
-                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm {{ ($location ?? '') === 'Remote' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400' }}">
+                                    <button type="button" @click="workModel = 'Remote'"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm"
+                                        :class="workModel === 'Remote' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'">
                                         Remote
                                     </button>
 
-                                    <button type="button" wire:click="$set('location', 'Hybrid')"
-                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm {{ ($location ?? '') === 'Hybrid' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400' }}">
+                                    <button type="button" @click="workModel = 'Hybrid'"
+                                        class="inline-flex items-center rounded-full border px-3.5 py-2 text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5 hover:shadow-sm"
+                                        :class="workModel === 'Hybrid' ? 'border-blue-300 bg-blue-50 text-blue-700 ring-2 ring-blue-100' : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400'">
                                         Hybrid
                                     </button>
                                 </div>
@@ -112,6 +115,21 @@
 
                 <div class="space-y-6">
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
+                        <h3 class="mb-4 text-base font-bold text-slate-900">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button type="button"
+                                class="flex w-full cursor-not-allowed items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-bold text-white opacity-70">
+                                Move to Next Stage
+                            </button>
+                            <button type="button"
+                                class="flex w-full cursor-not-allowed items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-500">
+                                Archive Application
+                            </button>
+                        </div>
+                        <p class="mt-2 text-xs text-slate-500">Available after the application is created.</p>
+                    </section>
+
+                    <section class="rounded-xl border border-slate-200 bg-white p-5">
                         <h3 class="mb-4 text-base font-bold text-slate-900">Quick Stats</h3>
                         <div class="space-y-4">
                             <div>
@@ -139,10 +157,12 @@
                     </section>
 
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
-                        <h4 class="mb-2 text-sm font-bold text-slate-900">Preview</h4>
-                        <p class="text-sm text-slate-600">
-                            Your application will be created in <span class="font-semibold text-slate-800">Applied</span> and appear immediately in the board.
-                        </p>
+                        <h4 class="mb-4 text-sm font-bold text-slate-900">Next Event</h4>
+                        <div class="rounded-lg border-l-4 border-blue-600 bg-blue-50 p-3">
+                            <p class="text-xs font-bold uppercase text-blue-700">No event scheduled yet</p>
+                            <p class="mt-1 text-sm font-semibold text-slate-900">Create first, then schedule interviews</p>
+                            <p class="text-xs text-slate-500">Remote or in-person details can be added later.</p>
+                        </div>
                     </section>
                 </div>
             </div>
