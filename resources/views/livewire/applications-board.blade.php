@@ -230,9 +230,18 @@
                                             $isInterviewToday = $app->interview_date?->isToday();
                                             $isInterviewTomorrow = $app->interview_date?->isTomorrow();
                                             $isDuplicate = in_array($app->id, $duplicateIds ?? [], true);
+                                            $appliedDateLabel = $app->applied_at?->format('M d, Y');
+                                            $appliedRelativeLabel = $app->applied_at?->copy()->locale('en')->diffForHumans();
                                         @endphp
                                         <div class="mt-2 text-xs text-gray-400">
-                                            Applied: {{ $app->applied_at?->format('d/m/Y') }}
+                                            @if ($appliedDateLabel)
+                                                Applied {{ $appliedDateLabel }}
+                                                @if ($appliedRelativeLabel)
+                                                    • {{ $appliedRelativeLabel }}
+                                                @endif
+                                            @else
+                                                Applied -
+                                            @endif
                                         </div>
                                     </div>
 
@@ -388,7 +397,8 @@
     <x-modals.edit-application-modal :isOpen="$isEditModalOpen" :company="$editCompany" :position="$editPosition" :city="$editCity"
         :location="$editLocation" :appliedAt="$editAppliedAt" :jobUrl="$editJobUrl" :personalScore="$editPersonalScore" :salaryOffered="$editSalaryOffered"
         :salaryExpected="$editSalaryExpected" :notes="$editNotes" :editingIsInterview="$editingIsInterview" :interviewDate="$editInterviewDate" :interviewTime="$editInterviewTime"
-        :interviewIsRemote="$editInterviewIsRemote" :interviewPlatform="$editInterviewPlatform" :interviewAddress="$editInterviewAddress" />
+        :interviewIsRemote="$editInterviewIsRemote" :interviewPlatform="$editInterviewPlatform" :interviewAddress="$editInterviewAddress"
+        :currentStatus="$editingCurrentStatus" />
 
     <x-modals.interview-scheduling-modal :isOpen="$isInterviewModalOpen" :interviewDate="$interviewDate" :interviewTime="$interviewTime" :interviewIsRemote="$interviewIsRemote"
         :interviewPlatform="$interviewPlatform" :interviewAddress="$interviewAddress" />
