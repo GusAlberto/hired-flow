@@ -203,7 +203,7 @@
                     <div id="{{ $status }}" class="min-h-24 space-y-3">
                         @foreach ($column['items'] as $app)
                             <article
-                                class="card rounded-2xl border p-4 shadow-sm {{ in_array($app->id, $duplicateIds ?? [], true) ? 'border-red-300 bg-red-50/30' : 'border-gray-200 bg-white' }}"
+                                class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
                                 data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}"
                                 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"
                                 x-data="{ expanded: false }">
@@ -229,9 +229,10 @@
                                         @php
                                             $isInterviewToday = $app->interview_date?->isToday();
                                             $isInterviewTomorrow = $app->interview_date?->isTomorrow();
+                                            $isDuplicate = in_array($app->id, $duplicateIds ?? [], true);
                                         @endphp
                                         <div class="mt-2 text-xs text-gray-400">
-                                            {{ $app->applied_at?->format('d/m/Y') }}
+                                            Applied: {{ $app->applied_at?->format('d/m/Y') }}
                                         </div>
                                     </div>
 
@@ -258,6 +259,13 @@
                                             </div>
                                         </details>
 
+                                        @if ($isDuplicate)
+                                            <span
+                                                class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold bg-yellow-200 text-gray-700 ring-1 ring-gray-300">
+                                                Duplicate
+                                            </span>
+                                        @endif
+
                                         @if ($app->interview_date && ($isInterviewToday || $isInterviewTomorrow))
                                             <span
                                                 class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $isInterviewToday ? 'bg-red-100 text-red-700 ring-1 ring-red-200' : 'bg-orange-100 text-orange-700 ring-1 ring-orange-200' }}">
@@ -268,6 +276,12 @@
                                 </div>
 
                                 <div class="space-y-2 text-sm text-gray-700">
+                                    @if ($showDuplicates && $isDuplicate)
+                                        <div
+                                            class="rounded-lg border border-gray-200 bg-gray-100 px-2.5 py-2 text-xs text-gray-700">
+                                            {{ $duplicateReasons[$app->id] ?? 'Duplicate by matching data with another application.' }}
+                                        </div>
+                                    @endif
                                     <div>
                                         <span class="font-medium">Company name:</span>
                                         {{ $app->company }}
@@ -280,12 +294,7 @@
                                         <span class="font-medium">Location:</span>
                                         {{ $app->location ?: 'Not informed' }}
                                     </div>
-                                    @if ($showDuplicates && in_array($app->id, $duplicateIds ?? [], true))
-                                        <div
-                                            class="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs text-red-700">
-                                            {{ $duplicateReasons[$app->id] ?? 'Duplicate by matching data with another application.' }}
-                                        </div>
-                                    @endif
+                                    
                                     <div class="flex items-center justify-between gap-3">
                                         <div>
                                             <span class="font-medium">Personal score:</span>
