@@ -62,6 +62,7 @@ class ApplicationsBoard extends Component
     public $editInterviewPlatform;
     public $editInterviewAddress;
     public $editingIsInterview = false;
+    public $editingCurrentStatus = null;
 
     public $interviewDate;
     public $interviewTime;
@@ -192,6 +193,47 @@ class ApplicationsBoard extends Component
         $this->service->move($application, $nextStatus);
 
         session()->flash('status', 'Application moved to next stage successfully.');
+        $this->closeEditModal();
+    }
+
+    public function moveEditingApplicationToPreviousStage(): void
+    {
+        if (!$this->editingApplicationId) {
+            return;
+        }
+
+        $application = $this->service->findForUser($this->editingApplicationId, Auth::id());
+
+        if (!$application) {
+            return;
+        }
+
+        $currentStatus = $this->resolveStatus($application);
+
+        $previousStageMap = [
+            'waiting' => 'applied',
+            'interview' => 'waiting',
+            'offer' => 'interview',
+        ];
+
+        $previousStatus = $previousStageMap[$currentStatus] ?? null;
+
+        if (!$previousStatus) {
+            session()->flash('status', 'This application cannot move back a stage.');
+            return;
+        }
+
+        // For interview transitions, always collect date/time through interview modal.
+        if ($previousStatus === 'interview') {
+            $applicationId = $application->id;
+            $this->closeEditModal();
+            $this->prepareInterviewMove($applicationId);
+            return;
+        }
+
+        $this->service->move($application, $previousStatus);
+
+        session()->flash('status', 'Application moved to previous stage successfully.');
         $this->closeEditModal();
     }
 
@@ -652,6 +694,7 @@ class ApplicationsBoard extends Component
         $this->editInterviewIsRemote  = (bool) $application->interview_is_remote;
         $this->editInterviewPlatform  = $application->interview_platform;
         $this->editInterviewAddress   = $application->interview_address;
+        $this->editingCurrentStatus   = $this->resolveStatus($application);
     }
 
     private function fillInterviewForm(Application $application): void
@@ -779,7 +822,7 @@ class ApplicationsBoard extends Component
             'editSalaryOffered', 'editSalaryExpected', 'editNotes',
             'editInterviewDate', 'editInterviewTime', 'editInterviewLocation',
             'editInterviewIsRemote', 'editInterviewPlatform', 'editInterviewAddress',
-            'editingIsInterview',
+            'editingIsInterview', 'editingCurrentStatus',
         ]);
 
         $this->editInterviewIsRemote = false;

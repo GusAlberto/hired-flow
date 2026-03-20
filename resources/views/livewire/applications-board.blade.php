@@ -397,7 +397,8 @@
     <x-modals.edit-application-modal :isOpen="$isEditModalOpen" :company="$editCompany" :position="$editPosition" :city="$editCity"
         :location="$editLocation" :appliedAt="$editAppliedAt" :jobUrl="$editJobUrl" :personalScore="$editPersonalScore" :salaryOffered="$editSalaryOffered"
         :salaryExpected="$editSalaryExpected" :notes="$editNotes" :editingIsInterview="$editingIsInterview" :interviewDate="$editInterviewDate" :interviewTime="$editInterviewTime"
-        :interviewIsRemote="$editInterviewIsRemote" :interviewPlatform="$editInterviewPlatform" :interviewAddress="$editInterviewAddress" />
+        :interviewIsRemote="$editInterviewIsRemote" :interviewPlatform="$editInterviewPlatform" :interviewAddress="$editInterviewAddress"
+        :currentStatus="$editingCurrentStatus" />
 
     <x-modals.interview-scheduling-modal :isOpen="$isInterviewModalOpen" :interviewDate="$interviewDate" :interviewTime="$interviewTime" :interviewIsRemote="$interviewIsRemote"
         :interviewPlatform="$interviewPlatform" :interviewAddress="$interviewAddress" />

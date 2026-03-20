@@ -16,6 +16,7 @@
     'interviewIsRemote' => false,
     'interviewPlatform' => '',
     'interviewAddress' => '',
+    'currentStatus' => null,
 ])
 
 @if ($isOpen)
@@ -193,12 +194,25 @@
 
                 <div class="space-y-6">
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
+                        @php
+                            $canMovePrevious = in_array($currentStatus, ['waiting', 'interview', 'offer'], true);
+                        @endphp
                         <h3 class="mb-4 text-base font-bold text-slate-900">Quick Actions</h3>
                         <div class="space-y-3">
-                            <button type="button" wire:click="moveEditingApplicationToNextStage"
-                                class="flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-800">
-                                Move to Next Stage
-                            </button>
+                            <div class="grid grid-cols-1 gap-3 {{ $canMovePrevious ? 'sm:grid-cols-2' : '' }}">
+                                @if ($canMovePrevious)
+                                    <button type="button" wire:click="moveEditingApplicationToPreviousStage"
+                                        class="flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200">
+                                        Move to Previous Stage
+                                    </button>
+                                @endif
+
+                                <button type="button" wire:click="moveEditingApplicationToNextStage"
+                                    class="flex w-full items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-800">
+                                    Move to Next Stage
+                                </button>
+                            </div>
+
                             <button type="button" wire:click="archiveEditingApplication"
                                 class="flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200">
                                 Archive Application
