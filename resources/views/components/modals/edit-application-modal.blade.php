@@ -53,7 +53,10 @@
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <div class="space-y-6 lg:col-span-2">
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
-                        <h3 class="mb-4 text-base font-bold text-slate-900">Role Information</h3>
+                        <div class="mb-4 flex items-center justify-between">
+                            <h3 class="text-base font-bold text-slate-900">Role Information</h3>
+                            <span class="text-xs font-medium text-slate-400">{{ $editingIsInterview ? '1/4' : '1/3' }}</span>
+                        </div>
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
                                 <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Company name</label>
@@ -103,7 +106,10 @@
                     </section>
 
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
-                        <h3 class="mb-4 text-base font-bold text-slate-900">Application Details</h3>
+                        <div class="mb-4 flex items-center justify-between">
+                            <h3 class="text-base font-bold text-slate-900">Application Details</h3>
+                            <span class="text-xs font-medium text-slate-400">{{ $editingIsInterview ? '2/4' : '2/3' }}</span>
+                        </div>
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
                                 <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Applied date</label>
@@ -144,7 +150,10 @@
                     </section>
 
                     <section class="rounded-xl border border-slate-200 bg-white p-5">
-                        <h3 class="mb-4 text-base font-bold text-slate-900">Internal Notes</h3>
+                        <div class="mb-4 flex items-center justify-between">
+                            <h3 class="text-base font-bold text-slate-900">Internal Notes</h3>
+                            <span class="text-xs font-medium text-slate-400">{{ $editingIsInterview ? '3/4' : '3/3' }}</span>
+                        </div>
                         <textarea placeholder="Notes" wire:model.defer="editNotes" rows="4"
                             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"></textarea>
                         @error('editNotes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -152,7 +161,10 @@
 
                     @if ($editingIsInterview)
                     <section class="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-                        <h3 class="text-base font-bold text-slate-900">Interview details</h3>
+                        <div class="mb-4 flex items-center justify-between">
+                            <h3 class="text-base font-bold text-slate-900">Interview details</h3>
+                            <span class="text-xs font-medium text-slate-400">4/4</span>
+                        </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
