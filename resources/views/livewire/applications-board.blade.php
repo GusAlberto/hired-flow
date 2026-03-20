@@ -276,6 +276,12 @@
                                 </div>
 
                                 <div class="space-y-2 text-sm text-gray-700">
+                                    @if ($showDuplicates && $isDuplicate)
+                                        <div
+                                            class="rounded-lg border border-gray-200 bg-gray-100 px-2.5 py-2 text-xs text-gray-700">
+                                            {{ $duplicateReasons[$app->id] ?? 'Duplicate by matching data with another application.' }}
+                                        </div>
+                                    @endif
                                     <div>
                                         <span class="font-medium">Company name:</span>
                                         {{ $app->company }}
@@ -288,12 +294,7 @@
                                         <span class="font-medium">Location:</span>
                                         {{ $app->location ?: 'Not informed' }}
                                     </div>
-                                    @if ($showDuplicates && $isDuplicate)
-                                        <div
-                                            class="rounded-lg border border-gray-200 bg-gray-100 px-2.5 py-2 text-xs text-gray-700">
-                                            {{ $duplicateReasons[$app->id] ?? 'Duplicate by matching data with another application.' }}
-                                        </div>
-                                    @endif
+                                    
                                     <div class="flex items-center justify-between gap-3">
                                         <div>
                                             <span class="font-medium">Personal score:</span>
