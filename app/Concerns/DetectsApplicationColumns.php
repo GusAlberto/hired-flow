@@ -46,6 +46,11 @@ trait DetectsApplicationColumns
         return Schema::hasColumn('applications', 'is_favorite');
     }
 
+    public function hasSortOrderColumn(): bool
+    {
+        return Schema::hasColumn('applications', 'sort_order');
+    }
+
     public function hasInterviewFields(): bool
     {
         return Schema::hasColumns('applications', [
