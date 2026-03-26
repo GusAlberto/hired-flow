@@ -100,9 +100,101 @@
     </x-dashboard.container>
 
     <section
-        x-data='applicationCalendar(@js($calendarApplications))'
+        x-data='{
+            open: false,
+            byDate: {},
+            weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+            currentYear: (new Date()).getFullYear(),
+            currentMonth: (new Date()).getMonth() + 1,
+            selectedDate: "",
+            init() {
+                const applications = JSON.parse(this.$refs.calendarData.textContent || "[]")
+                this.byDate = applications.reduce((acc, item) => {
+                    if (!item || !item.applied_at) return acc
+                    if (!acc[item.applied_at]) acc[item.applied_at] = []
+                    acc[item.applied_at].push(item)
+                    return acc
+                }, {})
+
+                const todayIso = this.formatIso(new Date())
+                const dates = Object.keys(this.byDate).sort()
+                const reference = dates[0] || todayIso
+                const [year, month] = reference.split("-").map(Number)
+
+                this.currentYear = year
+                this.currentMonth = month
+                this.selectedDate = this.byDate[todayIso] ? todayIso : (dates[0] || todayIso)
+            },
+            formatIso(date) {
+                const y = date.getFullYear()
+                const m = String(date.getMonth() + 1).padStart(2, "0")
+                const d = String(date.getDate()).padStart(2, "0")
+                return `${y}-${m}-${d}`
+            },
+            monthLabel() {
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                return `${monthNames[this.currentMonth - 1]} ${this.currentYear}`
+            },
+            get monthCells() {
+                const firstDay = new Date(this.currentYear, this.currentMonth - 1, 1)
+                const daysInMonth = new Date(this.currentYear, this.currentMonth, 0).getDate()
+                const startWeekday = firstDay.getDay()
+                const cells = []
+
+                for (let i = 0; i < startWeekday; i += 1) {
+                    cells.push({ key: `blank-${i}`, day: null, iso: null, count: 0 })
+                }
+
+                for (let day = 1; day <= daysInMonth; day += 1) {
+                    const iso = this.formatIso(new Date(this.currentYear, this.currentMonth - 1, day))
+                    cells.push({ key: iso, day, iso, count: (this.byDate[iso] || []).length })
+                }
+
+                return cells
+            },
+            get selectedItems() {
+                return this.byDate[this.selectedDate] || []
+            },
+            get selectedLabel() {
+                if (!this.selectedDate) return "No date selected"
+                const [y, m, d] = this.selectedDate.split("-").map(Number)
+                return `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`
+            },
+            dayClass(cell) {
+                if (!cell.iso) return "cursor-default border-transparent bg-transparent text-transparent"
+                const isSelected = this.selectedDate === cell.iso
+                if (isSelected) return "border-cyan-500 bg-cyan-50 text-cyan-900 shadow-sm"
+                if (cell.count > 0) return "border-cyan-200 bg-cyan-50/70 text-cyan-800 hover:border-cyan-400 hover:bg-cyan-100"
+                return "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50"
+            },
+            selectDate(iso) {
+                this.selectedDate = iso
+            },
+            prevMonth() {
+                if (this.currentMonth === 1) {
+                    this.currentMonth = 12
+                    this.currentYear -= 1
+                    return
+                }
+                this.currentMonth -= 1
+            },
+            nextMonth() {
+                if (this.currentMonth === 12) {
+                    this.currentMonth = 1
+                    this.currentYear += 1
+                    return
+                }
+                this.currentMonth += 1
+            }
+        }'
         class="mb-8">
-        <button type="button" @click="open = true"
+        <style>
+            [x-cloak] { display: none !important; }
+        </style>
+
+        <script type="application/json" x-ref="calendarData">@json($calendarApplications)</script>
+
+        <button type="button" @click="open = !open"
             class="group relative w-full overflow-hidden rounded-3xl border border-cyan-200/80 bg-gradient-to-br from-cyan-50 via-white to-sky-100 p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
             <div class="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-cyan-300/30 blur-2xl"></div>
             <div class="pointer-events-none absolute -bottom-12 left-6 h-32 w-32 rounded-full bg-blue-300/20 blur-2xl"></div>
@@ -129,100 +221,53 @@
             </div>
         </button>
 
-        <div x-show="open" x-cloak x-transition.opacity.duration.200ms @keydown.escape.window="open = false"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 px-4 py-6">
-            <div @click.outside="open = false"
-                class="relative max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
-                <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
-                    <div>
-                        <h3 class="text-xl font-black text-slate-900">Applications by day</h3>
-                        <p class="text-sm text-slate-600">Select a highlighted day to list all applications submitted on that date.</p>
+        <div x-show="open" x-cloak x-transition.opacity.duration.180ms @keydown.escape.window="open = false"
+            class="relative mt-3" @click.outside="open = false">
+            <div class="w-full max-w-xl rounded-3xl border border-cyan-200 bg-white p-4 shadow-xl">
+                <div class="mb-4 flex items-center justify-between">
+                    <button type="button" @click="prevMonth()"
+                        class="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                        <span>&larr;</span>
+                        <span>Prev</span>
+                    </button>
+
+                    <div class="text-center">
+                        <p class="text-base font-black text-slate-900" x-text="monthLabel()"></p>
+                        <p class="text-[11px] uppercase tracking-wide text-slate-500">Applications calendar</p>
                     </div>
 
-                    <button type="button" @click="open = false"
-                        class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-                        aria-label="Close calendar modal">
-                        <span class="text-xl leading-none">&times;</span>
+                    <button type="button" @click="nextMonth()"
+                        class="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                        <span>Next</span>
+                        <span>&rarr;</span>
                     </button>
                 </div>
 
-                <div class="grid gap-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-                    <div class="border-b border-slate-200 p-6 lg:border-b-0 lg:border-r">
-                        <div class="mb-4 flex items-center justify-between">
-                            <button type="button" @click="prevMonth()"
-                                class="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                                <span>&larr;</span>
-                                <span>Prev</span>
-                            </button>
+                <div class="mb-2 grid grid-cols-7 gap-2 text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                    <template x-for="day in weekdays" :key="day">
+                        <div x-text="day"></div>
+                    </template>
+                </div>
 
-                            <div class="text-center">
-                                <p class="text-lg font-black text-slate-900" x-text="monthLabel()"></p>
-                                <p class="text-xs uppercase tracking-wide text-slate-500">Calendar view</p>
-                            </div>
+                <div class="grid grid-cols-7 gap-2">
+                    <template x-for="cell in monthCells" :key="cell.key">
+                        <button type="button"
+                            @click="cell.iso && selectDate(cell.iso)"
+                            :disabled="!cell.iso"
+                            class="relative h-10 rounded-lg border text-sm font-semibold transition"
+                            :class="dayClass(cell)">
+                            <span x-text="cell.day || ''"></span>
+                            <span x-show="cell.count > 0"
+                                class="absolute -right-1 -top-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-cyan-500 px-1 text-[9px] font-bold text-white"
+                                x-text="cell.count"></span>
+                        </button>
+                    </template>
+                </div>
 
-                            <button type="button" @click="nextMonth()"
-                                class="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                                <span>Next</span>
-                                <span>&rarr;</span>
-                            </button>
-                        </div>
-
-                        <div class="mb-2 grid grid-cols-7 gap-2 text-center text-xs font-bold uppercase tracking-wide text-slate-500">
-                            <template x-for="day in weekdays" :key="day">
-                                <div x-text="day"></div>
-                            </template>
-                        </div>
-
-                        <div class="grid grid-cols-7 gap-2">
-                            <template x-for="cell in monthCells" :key="cell.key">
-                                <button type="button"
-                                    @click="cell.iso && selectDate(cell.iso)"
-                                    :disabled="!cell.iso"
-                                    class="relative h-12 rounded-xl border text-sm font-semibold transition"
-                                    :class="dayClass(cell)">
-                                    <span x-text="cell.day || ''"></span>
-                                    <span x-show="cell.count > 0"
-                                        class="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-cyan-500 px-1 text-[10px] font-bold text-white"
-                                        x-text="cell.count"></span>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-
-                    <aside class="max-h-[52vh] overflow-auto p-6 lg:max-h-[70vh]">
-                        <div class="mb-3 flex items-center justify-between gap-2">
-                            <h4 class="text-base font-black text-slate-900" x-text="selectedLabel"></h4>
-                            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
-                                x-text="selectedItems.length + ' applications'"></span>
-                        </div>
-
-                        <template x-if="selectedItems.length === 0">
-                            <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
-                                No applications on this day.
-                            </div>
-                        </template>
-
-                        <div class="space-y-3" x-show="selectedItems.length > 0">
-                            <template x-for="item in selectedItems" :key="item.id">
-                                <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                                    <div class="flex items-start justify-between gap-3">
-                                        <div>
-                                            <p class="text-sm font-black uppercase text-sky-700" x-text="item.position"></p>
-                                            <p class="text-sm text-slate-700" x-text="item.company"></p>
-                                        </div>
-                                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700"
-                                            x-text="item.status"></span>
-                                    </div>
-
-                                    <div class="mt-3 grid gap-1 text-xs text-slate-500">
-                                        <p><span class="font-semibold text-slate-600">Applied:</span> <span x-text="item.applied_label"></span></p>
-                                        <p><span class="font-semibold text-slate-600">City:</span> <span x-text="item.city || 'Not informed'"></span></p>
-                                        <p><span class="font-semibold text-slate-600">Model:</span> <span x-text="item.location || 'Not informed'"></span></p>
-                                    </div>
-                                </article>
-                            </template>
-                        </div>
-                    </aside>
+                <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                    <span class="font-semibold" x-text="selectedLabel"></span>
+                    <span class="mx-1">•</span>
+                    <span x-text="selectedItems.length + ' applications'"></span>
                 </div>
             </div>
         </div>
@@ -632,114 +677,3 @@
     document.addEventListener('livewire:navigated', initSortables)
 </script>
 
-<script>
-    function applicationCalendar(applications) {
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-        const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-        const byDate = (applications || []).reduce((acc, item) => {
-            if (!item?.applied_at) return acc
-            if (!acc[item.applied_at]) acc[item.applied_at] = []
-            acc[item.applied_at].push(item)
-            return acc
-        }, {})
-
-        const today = new Date()
-        const initialIso = formatIso(today)
-        const firstDateWithApps = Object.keys(byDate).sort()[0] || initialIso
-        const initialRef = firstDateWithApps || initialIso
-        const [year, month] = initialRef.split('-').map(Number)
-
-        return {
-            open: false,
-            byDate,
-            weekdays: weekdayLabels,
-            currentYear: year,
-            currentMonth: month,
-            selectedDate: byDate[initialIso] ? initialIso : firstDateWithApps,
-
-            get monthCells() {
-                const firstDay = new Date(this.currentYear, this.currentMonth - 1, 1)
-                const daysInMonth = new Date(this.currentYear, this.currentMonth, 0).getDate()
-                const startWeekday = firstDay.getDay()
-                const cells = []
-
-                for (let i = 0; i < startWeekday; i += 1) {
-                    cells.push({ key: `blank-${i}`, day: null, iso: null, count: 0 })
-                }
-
-                for (let day = 1; day <= daysInMonth; day += 1) {
-                    const iso = formatIso(new Date(this.currentYear, this.currentMonth - 1, day))
-                    const count = (this.byDate[iso] || []).length
-                    cells.push({ key: iso, day, iso, count })
-                }
-
-                return cells
-            },
-
-            get selectedItems() {
-                return this.byDate[this.selectedDate] || []
-            },
-
-            get selectedLabel() {
-                if (!this.selectedDate) return 'No date selected'
-                const [y, m, d] = this.selectedDate.split('-').map(Number)
-                return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
-            },
-
-            monthLabel() {
-                return `${monthNames[this.currentMonth - 1]} ${this.currentYear}`
-            },
-
-            dayClass(cell) {
-                if (!cell.iso) {
-                    return 'cursor-default border-transparent bg-transparent text-transparent'
-                }
-
-                const isSelected = this.selectedDate === cell.iso
-                const hasItems = cell.count > 0
-
-                if (isSelected) {
-                    return 'border-cyan-500 bg-cyan-50 text-cyan-900 shadow-sm'
-                }
-
-                if (hasItems) {
-                    return 'border-cyan-200 bg-cyan-50/70 text-cyan-800 hover:border-cyan-400 hover:bg-cyan-100'
-                }
-
-                return 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:bg-slate-50'
-            },
-
-            selectDate(iso) {
-                this.selectedDate = iso
-            },
-
-            prevMonth() {
-                if (this.currentMonth === 1) {
-                    this.currentMonth = 12
-                    this.currentYear -= 1
-                    return
-                }
-
-                this.currentMonth -= 1
-            },
-
-            nextMonth() {
-                if (this.currentMonth === 12) {
-                    this.currentMonth = 1
-                    this.currentYear += 1
-                    return
-                }
-
-                this.currentMonth += 1
-            },
-        }
-    }
-
-    function formatIso(date) {
-        const y = date.getFullYear()
-        const m = String(date.getMonth() + 1).padStart(2, '0')
-        const d = String(date.getDate()).padStart(2, '0')
-        return `${y}-${m}-${d}`
-    }
-</script>
