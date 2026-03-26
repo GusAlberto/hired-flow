@@ -6,6 +6,10 @@ export function applicationsCalendarCardFactory() {
         currentYear: new Date().getFullYear(),
         currentMonth: new Date().getMonth() + 1,
         selectedDate: '',
+        jumpYear: new Date().getFullYear(),
+        jumpMonth: new Date().getMonth() + 1,
+        jumpDay: new Date().getDate(),
+        jumpDate: '',
 
         init() {
             const applications = JSON.parse(this.$refs.calendarData?.textContent || '[]');
@@ -25,6 +29,7 @@ export function applicationsCalendarCardFactory() {
             this.currentYear = year;
             this.currentMonth = month;
             this.selectedDate = this.byDate[todayIso] ? todayIso : (dates[0] || todayIso);
+            this.syncJumpFields();
         },
 
         formatIso(date) {
@@ -92,26 +97,100 @@ export function applicationsCalendarCardFactory() {
 
         selectDate(iso) {
             this.selectedDate = iso;
+
+            if (!iso) {
+                this.syncJumpFields();
+                return;
+            }
+
+            const [year, month, day] = iso.split('-').map(Number);
+            this.currentYear = year;
+            this.currentMonth = month;
+            this.jumpDay = day;
+            this.syncJumpFields();
+        },
+
+        syncJumpFields() {
+            this.jumpYear = this.currentYear;
+            this.jumpMonth = this.currentMonth;
+
+            const dayFromSelected = this.selectedDate ? Number(this.selectedDate.split('-')[2]) : null;
+            this.jumpDay = dayFromSelected || this.jumpDay || 1;
+
+            const safeDay = Math.min(Math.max(Number(this.jumpDay) || 1, 1), this.daysInCurrentMonth());
+            this.jumpDate = `${this.currentYear}-${String(this.currentMonth).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
+        },
+
+        daysInCurrentMonth() {
+            return new Date(this.currentYear, this.currentMonth, 0).getDate();
+        },
+
+        jumpToMonthYear() {
+            const normalizedYear = Number(this.jumpYear) || new Date().getFullYear();
+            const normalizedMonth = Math.min(Math.max(Number(this.jumpMonth) || 1, 1), 12);
+
+            this.currentYear = normalizedYear;
+            this.currentMonth = normalizedMonth;
+
+            const safeDay = Math.min(Math.max(Number(this.jumpDay) || 1, 1), this.daysInCurrentMonth());
+            const iso = `${this.currentYear}-${String(this.currentMonth).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
+
+            this.selectedDate = iso;
+            this.syncJumpFields();
+        },
+
+        jumpToExactDate() {
+            const normalizedYear = Number(this.jumpYear) || new Date().getFullYear();
+            const normalizedMonth = Math.min(Math.max(Number(this.jumpMonth) || 1, 1), 12);
+            this.currentYear = normalizedYear;
+            this.currentMonth = normalizedMonth;
+
+            const safeDay = Math.min(Math.max(Number(this.jumpDay) || 1, 1), this.daysInCurrentMonth());
+            const iso = `${this.currentYear}-${String(this.currentMonth).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
+
+            this.selectedDate = iso;
+            this.syncJumpFields();
+        },
+
+        jumpToDateInput() {
+            if (!this.jumpDate) {
+                return;
+            }
+
+            const [year, month, day] = this.jumpDate.split('-').map(Number);
+            if (!year || !month || !day) {
+                return;
+            }
+
+            this.currentYear = year;
+            this.currentMonth = month;
+            this.selectedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            this.jumpDay = day;
+            this.syncJumpFields();
         },
 
         prevMonth() {
             if (this.currentMonth === 1) {
                 this.currentMonth = 12;
                 this.currentYear -= 1;
+                this.syncJumpFields();
                 return;
             }
 
             this.currentMonth -= 1;
+            this.syncJumpFields();
         },
 
         nextMonth() {
             if (this.currentMonth === 12) {
                 this.currentMonth = 1;
                 this.currentYear += 1;
+                this.syncJumpFields();
                 return;
             }
 
             this.currentMonth += 1;
+            this.syncJumpFields();
         },
     };
 }
