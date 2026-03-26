@@ -98,6 +98,45 @@ http://localhost
 
 ---
 
+## Deploy na Trapiche (Laravel)
+
+Para este projeto, use deploy por `Dockerfile` (nao o detector automatico de Vite).
+
+Configuracao no painel:
+
+* Repositorio: `GusAlberto/hired-flow`
+* Branch: a branch que voce quer publicar
+* Diretorio raiz: `.`
+
+### Por que Dockerfile
+
+O detector Vite da Trapiche e para apps estaticos (saida em `dist`).
+Este projeto precisa de backend PHP/Laravel em execucao, entao o caminho correto e container.
+
+### Variaveis de ambiente minimas
+
+* `APP_ENV=production`
+* `APP_DEBUG=false`
+* `APP_URL=https://seu-dominio`
+* `APP_KEY`
+* `DB_CONNECTION`
+* `DB_HOST`
+* `DB_PORT`
+* `DB_DATABASE`
+* `DB_USERNAME`
+* `DB_PASSWORD`
+
+Opcional:
+
+* `RUN_MIGRATIONS=true` para rodar migrate no startup do container.
+
+### Observacoes
+
+* O container escuta automaticamente na porta vinda de `PORT`.
+* O Dockerfile desta raiz ja instala dependencias, roda `npm run build` e sobe Nginx + PHP-FPM.
+
+---
+
 ## Roadmap
 
 Future improvements:
