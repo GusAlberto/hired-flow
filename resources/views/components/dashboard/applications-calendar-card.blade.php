@@ -60,45 +60,14 @@
                 </button>
             </div>
 
-            <div class="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Go to date</p>
+            <div class="mb-4 flex gap-2">
+                <input type="date" x-model="jumpDate"
+                    class="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-200" />
 
-                <div class="grid gap-2 sm:grid-cols-4">
-                    <input type="number" min="1900" max="2100" x-model.number="jumpYear"
-                        class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-200"
-                        placeholder="Year" />
-
-                    <select x-model.number="jumpMonth"
-                        class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-200">
-                        <template x-for="month in 12" :key="month">
-                            <option :value="month" x-text="String(month).padStart(2, '0')"></option>
-                        </template>
-                    </select>
-
-                    <input type="number" min="1" max="31" x-model.number="jumpDay"
-                        class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-200"
-                        placeholder="Day" />
-
-                    <button type="button" @click="jumpToExactDate()"
-                        class="rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700">
-                        Search
-                    </button>
-                </div>
-
-                <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-                    <input type="date" x-model="jumpDate"
-                        class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-200" />
-
-                    <button type="button" @click="jumpToDateInput()"
-                        class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                        Open date
-                    </button>
-
-                    <button type="button" @click="jumpToMonthYear()"
-                        class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                        Open month
-                    </button>
-                </div>
+                <button type="button" @click="jumpToDateInput()"
+                    class="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700">
+                    Go
+                </button>
             </div>
 
             <div class="mb-2 grid grid-cols-7 gap-2 text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">
