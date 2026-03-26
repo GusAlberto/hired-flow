@@ -16,16 +16,45 @@
         <div class="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-cyan-300/30 blur-2xl"></div>
         <div class="pointer-events-none absolute -bottom-12 left-6 h-32 w-32 rounded-full bg-blue-300/20 blur-2xl"></div>
 
-        <div class="relative flex flex-wrap items-start justify-between gap-4">
+        <div class="relative flex flex-wrap items-start justify-between gap-6">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">Application calendar</p>
                 <h3 class="mt-2 text-2xl font-black text-slate-900">Pick a day and review your applications</h3>
                 <p class="mt-1 text-sm text-slate-600">Click this card to expand a full monthly view and see jobs applied on each date.</p>
             </div>
 
-            <div class="rounded-2xl border border-cyan-200 bg-white/90 px-4 py-3 shadow-sm">
-                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tracked dates</div>
-                <div class="mt-1 text-3xl font-black text-cyan-700" x-text="Object.keys(byDate).length"></div>
+            <div class="relative flex items-start gap-3">
+                <!-- Calendar Visual Balloon -->
+                {{-- <div class="relative rounded-2xl border border-sky-300 bg-gradient-to-br from-sky-100 to-cyan-100 p-3 shadow-sm">
+                    <div class="grid grid-cols-3 gap-1">
+                        <div class="h-2 w-2 rounded-sm bg-sky-400"></div>
+                        <div class="h-2 w-2 rounded-sm bg-sky-400"></div>
+                        <div class="h-2 w-2 rounded-sm bg-sky-600"></div>
+                        <div class="h-2 w-2 rounded-sm bg-sky-400"></div>
+                        <div class="h-2 w-2 rounded-sm bg-sky-400"></div>
+                        <div class="h-2 w-2 rounded-sm bg-sky-400"></div>
+                        <div class="h-2 w-2 rounded-sm bg-sky-400"></div>
+                        <div class="h-2 w-2 rounded-sm bg-cyan-600"></div>
+                        <div class="h-2 w-2 rounded-sm bg-sky-400"></div>
+                    </div>
+                    
+                    <!-- Pointer/Arrow pointing left -->
+                    <div class="absolute -right-2 top-1/2 -translate-y-1/2 h-0 w-0 border-l-4 border-t-2 border-b-2 border-l-sky-100 border-t-transparent border-b-transparent"></div>
+                </div> --}}
+
+                <!-- Tracked Dates Box -->
+                <div class="rounded-2xl border border-cyan-200 bg-white/90 px-4 py-3 shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tracked dates</span>
+                        <svg class="h-4 w-4 text-cyan-600" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="mt-1 text-3xl font-black text-cyan-700" x-text="Object.keys(byDate).length"></div>
+                </div>
             </div>
         </div>
 
