@@ -98,6 +98,107 @@ http://localhost
 
 ---
 
+## Security: Secrets and Environment Variables
+
+Use this simple rule:
+
+* Public values can go to frontend.
+* Secrets must stay server-side only.
+
+### What should be secret
+
+Examples:
+
+* `APP_KEY`
+* `DB_PASSWORD`
+* `AWS_SECRET_ACCESS_KEY`
+* API tokens and webhook secrets
+
+### Safe defaults
+
+* Keep `.env` out of git (already ignored in this project).
+* Commit only `.env.example` with placeholder values.
+* Never expose secrets with frontend prefixes such as `VITE_`.
+* In production: `APP_ENV=production` and `APP_DEBUG=false`.
+
+---
+
+## Deploy Without Cloudflare
+
+This project can run in any provider that supports PHP 8.2+ and a database.
+
+### 1) Build and prepare
+
+```bash
+composer install --no-dev --optimize-autoloader
+npm ci
+npm run build
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+### 2) Set environment variables in your provider panel
+
+At minimum:
+
+* `APP_NAME`
+* `APP_ENV=production`
+* `APP_DEBUG=false`
+* `APP_KEY`
+* `APP_URL`
+* `DB_CONNECTION`
+* `DB_HOST`
+* `DB_PORT`
+* `DB_DATABASE`
+* `DB_USERNAME`
+* `DB_PASSWORD`
+
+Generate app key locally if needed:
+
+```bash
+php artisan key:generate --show
+```
+
+### 3) Run migrations on deploy
+
+```bash
+php artisan migrate --force
+```
+
+### 4) Point your web root correctly
+
+For traditional servers, point the domain to `public/`.
+
+### Providers that work well
+
+* Render (Web Service with PHP runtime)
+* Railway (Nixpacks / Docker)
+* VPS (Ubuntu + Nginx + PHP-FPM)
+* Shared hosting with Laravel support (public path to `public/`)
+
+---
+
+## Optional: Cloudflare Mode
+
+Cloudflare support is optional in `vite.config.js`.
+
+* Default: Cloudflare plugin is off.
+* Enable only when needed:
+
+```bash
+USE_CLOUDFLARE=true npm run build
+```
+
+For Cloudflare secrets:
+
+```bash
+npx wrangler secret put APP_KEY
+npx wrangler secret put DB_PASSWORD
+```
+
+---
+
 ## Roadmap
 
 Future improvements:

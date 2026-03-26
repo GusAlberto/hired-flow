@@ -5,8 +5,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "deploy": "npm run build && wrangler deploy",
-    "preview": "npm run build && wrangler dev"
+    "deploy:cloudflare": "USE_CLOUDFLARE=true npm run build && wrangler deploy",
+    "preview:cloudflare": "USE_CLOUDFLARE=true npm run build && wrangler dev"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.29.1",
