@@ -5,6 +5,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ApplicationPageController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\ApplicationsBoard;
+use App\Livewire\BoardPage;
 
 Route::get('/', function () {
     return view('welcome');
@@ -26,6 +27,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', ApplicationsBoard::class)
         ->middleware('verified.when-enabled')
         ->name('dashboard');
+
+    Route::get('/board', BoardPage::class)
+        ->middleware('verified.when-enabled')
+        ->name('board');
 
     Route::get('/applications/create', [ApplicationPageController::class, 'create'])
         ->middleware('verified.when-enabled')
