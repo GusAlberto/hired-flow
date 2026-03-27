@@ -2,13 +2,19 @@
     'showDuplicates' => false,
 ])
 
-<div x-data="{ expanded: true }" class="mb-8 rounded-2xl border border-gray-300 bg-gray-300 p-4">
+<div x-data="{ expanded: true }"
+    class="group relative mb-8 overflow-hidden rounded-3xl border border-slate-400/80 bg-gradient-to-br from-white via-slate-50 to-slate-200 p-5 shadow-xl shadow-slate-300/40 transition hover:shadow-2xl hover:shadow-slate-400/40">
+    <div class="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-slate-400/25 blur-2xl"></div>
+    <div class="pointer-events-none absolute -bottom-14 left-6 h-32 w-32 rounded-full bg-slate-500/15 blur-2xl"></div>
+
     <div class="relative mb-4 flex items-center justify-center">
-        <h2 x-show="expanded" class="text-sm font-semibold uppercase tracking-wide text-gray-600">Dashboard</h2>
-        <h2 x-show="!expanded" class="text-2xl font-black uppercase tracking-wider text-gray-700">DASHboard</h2>
+        <h2 x-show="expanded" class="text-base font-black tracking-tight text-slate-800"
+            style="font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;">Dashboard cards</h2>
+        <h2 x-show="!expanded" class="text-2xl font-black tracking-tight text-slate-800"
+            style="font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;">Dashboard cards</h2>
 
         <button type="button" @click="expanded = !expanded"
-            class="absolute right-0 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-100 bg-white text-gray-600 shadow-sm transition hover:bg-gray-50 hover:text-gray-800"
+            class="absolute right-0 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-400/80 bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 hover:text-slate-800"
             :aria-expanded="expanded" aria-label="Toggle dashboard" title="Show or hide dashboard">
             <svg class="h-4 w-4 transition-transform duration-200" :class="expanded ? 'rotate-180' : ''"
                 viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

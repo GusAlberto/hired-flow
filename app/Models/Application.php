@@ -20,6 +20,7 @@ class Application extends Model
         'stage',
         'is_favorite',
         'status',
+        'sort_order',
         'applied_at',
         'job_url',
         'interview_date',
@@ -36,10 +37,11 @@ class Application extends Model
 
     protected $casts = [
         'applied_at' => 'date',
+        'sort_order' => 'integer',
         'is_favorite' => 'boolean',
         'interview_date' => 'date',
         'interview_is_remote' => 'boolean',
-        'personal_score' => 'integer',
+        'personal_score' => 'decimal:1',
         'salary_offered' => 'decimal:2',
         'salary_expected' => 'decimal:2',
     ];

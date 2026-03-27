@@ -16,6 +16,7 @@
         </div>
     @endif
 
+    {{--
     <div class="mb-6 flex flex-wrap items-center gap-3 sm:flex-nowrap">
         <!-- Search Input -->
         <div class="relative w-full sm:w-[170px] sm:max-w-[170px] sm:flex-none">
@@ -45,14 +46,81 @@
                 <option value="offer">Offer</option>
             </select>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                {{-- <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                </svg> --}}
+                </svg> 
             </div>
         </div>
     </div>
+    --}}
+    
+    <div class="mb-6 rounded-2xl border border-slate-200 bg-white/80 px-7 py-4 shadow-sm">
+        <p class="text-lg font-bold text-slate-800">
+            Hi, {{ auth()->user()->name ?? 'there' }}!
+        </p>
+        <p class="mt-1 text-md font-medium text-slate-600">
+            Follow your job opportunities and applications in real time.
+        </p>
+    </div>
 
-    <x-dashboard.container :showDuplicates="$showDuplicates">
+    @php
+        $today = now();
+        $todayInterviews = $interview
+            ->filter(fn($app) => $app->interview_date && $app->interview_date->isSameDay($today))
+            ->sortBy('interview_time')
+            ->values();
+
+        $offerRate = $total > 0 ? round(($offers / $total) * 100) : 0;
+        $interviewRate = $total > 0 ? round(($interviews / $total) * 100) : 0;
+    @endphp
+
+    <section class="mb-6 rounded-3xl border border-slate-300/80 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-5 shadow-sm">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h3 class="text-sm font-black uppercase tracking-[0.18em] text-slate-700">Daily reminders</h3>
+                <p class="mt-1 text-xs text-slate-500">Stay on track with today's interview schedule.</p>
+            </div>
+            <span class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                {{ $today->format('D, d M') }}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Interviews today</p>
+                <p class="mt-2 text-4xl font-black leading-none text-amber-700">{{ $todayInterviews->count() }}</p>
+            </div>
+
+            <div class="col-span-1 md:col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Today schedule</p>
+
+            @if ($todayInterviews->isEmpty())
+                <p class="mt-2 text-sm text-slate-500">No interviews scheduled for today. Great time to apply to new opportunities.</p>
+            @else
+                <div class="mt-2 space-y-2">
+                    @foreach ($todayInterviews->take(3) as $app)
+                        <div class="flex flex-wrap items-start gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-semibold text-slate-800">{{ $app->position }} · {{ $app->company }}</p>
+                                <p class="text-xs text-slate-500">
+                                    {{ $app->interview_is_remote ? 'Remote' : ($app->interview_location ?: 'Interview') }}
+                                </p>
+                            </div>
+                            <span class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700 whitespace-nowrap">
+                                {{ $app->interview_time ? \Illuminate\Support\Carbon::parse($app->interview_time)->format('H:i') : 'TBA' }}
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+
+                @if ($todayInterviews->count() > 3)
+                    <p class="mt-2 text-xs text-slate-500">+{{ $todayInterviews->count() - 3 }} more interview(s) today.</p>
+                @endif
+            @endif
+        </div>
+    </section>
+
+    <x-dashboard.dashboard-container :showDuplicates="$showDuplicates">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-5">
             <div class="rounded-2xl bg-white p-5 shadow">
                 <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total applications</div>
@@ -62,11 +130,13 @@
             <div class="rounded-2xl bg-white p-5 shadow">
                 <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Interviews</div>
                 <div class="mt-3 text-5xl font-black leading-none text-amber-600">{{ $interviews }}</div>
+                <div class="mt-2 text-xs font-semibold text-amber-700">Interview rate: {{ $interviewRate }}%</div>
             </div>
 
             <div class="rounded-2xl bg-white p-5 shadow">
                 <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Offers</div>
                 <div class="mt-3 text-5xl font-black leading-none text-emerald-600">{{ $offers }}</div>
+                <div class="mt-2 text-xs font-semibold text-emerald-700">Offer rate: {{ $offerRate }}%</div>
             </div>
 
             <button type="button" wire:click="toggleFavoritesFilter"
@@ -97,7 +167,9 @@
 
             <x-dashboard.duplicates-card :duplicateCount="$duplicateCount" :showDuplicates="$showDuplicates" />
         </div>
-    </x-dashboard.container>
+    </x-dashboard.dashboard-container>
+
+    <x-dashboard.applications-calendar-card :calendarApplications="$calendarApplications" />
 
     @if ($showFavoritesOnly)
         <div
@@ -203,7 +275,7 @@
                     <div id="{{ $status }}" class="min-h-24 space-y-3">
                         @foreach ($column['items'] as $app)
                             <article
-                                class="card rounded-2xl border p-4 shadow-sm {{ in_array($app->id, $duplicateIds ?? [], true) ? 'border-red-300 bg-red-50/30' : 'border-gray-200 bg-white' }}"
+                                class="card rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
                                 data-id="{{ $app->id }}" wire:key="application-{{ $app->id }}"
                                 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"
                                 x-data="{ expanded: false }">
@@ -229,9 +301,19 @@
                                         @php
                                             $isInterviewToday = $app->interview_date?->isToday();
                                             $isInterviewTomorrow = $app->interview_date?->isTomorrow();
+                                            $isDuplicate = in_array($app->id, $duplicateIds ?? [], true);
+                                            $appliedDateLabel = $app->applied_at?->format('M d, Y');
+                                            $appliedRelativeLabel = $app->applied_at?->copy()->locale('en')->diffForHumans();
                                         @endphp
                                         <div class="mt-2 text-xs text-gray-400">
-                                            {{ $app->applied_at?->format('d/m/Y') }}
+                                            @if ($appliedDateLabel)
+                                                Applied {{ $appliedDateLabel }}
+                                                @if ($appliedRelativeLabel)
+                                                    • {{ $appliedRelativeLabel }}
+                                                @endif
+                                            @else
+                                                Applied -
+                                            @endif
                                         </div>
                                     </div>
 
@@ -258,6 +340,13 @@
                                             </div>
                                         </details>
 
+                                        @if ($isDuplicate)
+                                            <span
+                                                class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold bg-yellow-200 text-gray-700 ring-1 ring-gray-300">
+                                                Duplicate
+                                            </span>
+                                        @endif
+
                                         @if ($app->interview_date && ($isInterviewToday || $isInterviewTomorrow))
                                             <span
                                                 class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $isInterviewToday ? 'bg-red-100 text-red-700 ring-1 ring-red-200' : 'bg-orange-100 text-orange-700 ring-1 ring-orange-200' }}">
@@ -268,6 +357,12 @@
                                 </div>
 
                                 <div class="space-y-2 text-sm text-gray-700">
+                                    @if ($showDuplicates && $isDuplicate)
+                                        <div
+                                            class="rounded-lg border border-gray-200 bg-gray-100 px-2.5 py-2 text-xs text-gray-700">
+                                            {{ $duplicateReasons[$app->id] ?? 'Duplicate by matching data with another application.' }}
+                                        </div>
+                                    @endif
                                     <div>
                                         <span class="font-medium">Company name:</span>
                                         {{ $app->company }}
@@ -277,15 +372,10 @@
                                         {{ $app->city ?: 'Not informed' }}
                                     </div>
                                     <div>
-                                        <span class="font-medium">Location:</span>
+                                        <span class="font-medium">Work model:</span>
                                         {{ $app->location ?: 'Not informed' }}
                                     </div>
-                                    @if ($showDuplicates && in_array($app->id, $duplicateIds ?? [], true))
-                                        <div
-                                            class="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-xs text-red-700">
-                                            {{ $duplicateReasons[$app->id] ?? 'Duplicate by matching data with another application.' }}
-                                        </div>
-                                    @endif
+                                    
                                     <div class="flex items-center justify-between gap-3">
                                         <div>
                                             <span class="font-medium">Personal score:</span>
@@ -379,7 +469,8 @@
     <x-modals.edit-application-modal :isOpen="$isEditModalOpen" :company="$editCompany" :position="$editPosition" :city="$editCity"
         :location="$editLocation" :appliedAt="$editAppliedAt" :jobUrl="$editJobUrl" :personalScore="$editPersonalScore" :salaryOffered="$editSalaryOffered"
         :salaryExpected="$editSalaryExpected" :notes="$editNotes" :editingIsInterview="$editingIsInterview" :interviewDate="$editInterviewDate" :interviewTime="$editInterviewTime"
-        :interviewIsRemote="$editInterviewIsRemote" :interviewPlatform="$editInterviewPlatform" :interviewAddress="$editInterviewAddress" />
+        :interviewIsRemote="$editInterviewIsRemote" :interviewPlatform="$editInterviewPlatform" :interviewAddress="$editInterviewAddress"
+        :currentStatus="$editingCurrentStatus" />
 
     <x-modals.interview-scheduling-modal :isOpen="$isInterviewModalOpen" :interviewDate="$interviewDate" :interviewTime="$interviewTime" :interviewIsRemote="$interviewIsRemote"
         :interviewPlatform="$interviewPlatform" :interviewAddress="$interviewAddress" />
@@ -447,6 +538,10 @@
                         return
                     }
 
+                    const orderedIds = Array.from(evt.to.querySelectorAll('.card'))
+                        .map((card) => Number(card.dataset.id))
+                        .filter(Boolean)
+
                     if (evt.from.id !== 'interview' && newStatus === 'interview') {
                         const referenceNode = evt.from.children[evt.oldIndex] ?? null
                         evt.from.insertBefore(evt.item, referenceNode)
@@ -460,7 +555,8 @@
                     // Livewire v3/v4: dispatch with named payload { id, status }
                     Livewire.dispatch('moveApplication', {
                         id: id,
-                        status: newStatus
+                        status: newStatus,
+                        orderedIds: orderedIds
                     })
                 }
             })
@@ -478,3 +574,4 @@
     document.addEventListener('livewire:load', initSortables)
     document.addEventListener('livewire:navigated', initSortables)
 </script>
+
