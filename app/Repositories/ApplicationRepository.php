@@ -2,9 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Concerns\DetectsApplicationColumns;
 use App\Models\Application;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Handles all direct database access for the Application model.
@@ -12,14 +14,70 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class ApplicationRepository
 {
+    use DetectsApplicationColumns;
+
     /**
      * Returns all applications for a user, ordered by most recently updated.
      */
     public function allForUser(int $userId): Collection
     {
-        return Application::where('user_id', $userId)
-            ->latest('updated_at')
-            ->get();
+        $query = Application::where('user_id', $userId);
+
+        if ($this->hasSortOrderColumn()) {
+            $query->orderBy('sort_order')->orderByDesc('updated_at');
+        } else {
+            $query->latest('updated_at');
+        }
+
+        return $query->get();
+    }
+
+    public function reorderForUserStatus(int $userId, string $status, array $orderedIds): void
+    {
+        if (!$this->hasSortOrderColumn()) {
+            return;
+        }
+
+        $normalizedIds = array_values(array_unique(array_map('intval', $orderedIds)));
+
+        if (empty($normalizedIds)) {
+            return;
+        }
+
+        $existingIds = Application::query()
+            ->where('user_id', $userId)
+            ->where('status', $status)
+            ->orderBy('sort_order')
+            ->orderByDesc('updated_at')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (empty($existingIds)) {
+            return;
+        }
+
+        $existingLookup = array_flip($existingIds);
+
+        $validOrderedIds = array_values(array_filter(
+            $normalizedIds,
+            fn ($id) => isset($existingLookup[$id])
+        ));
+
+        $remainingIds = array_values(array_filter(
+            $existingIds,
+            fn ($id) => !in_array($id, $validOrderedIds, true)
+        ));
+
+        $finalOrder = array_merge($validOrderedIds, $remainingIds);
+
+        DB::transaction(function () use ($finalOrder) {
+            foreach ($finalOrder as $index => $applicationId) {
+                Application::query()
+                    ->where('id', $applicationId)
+                    ->update(['sort_order' => $index + 1]);
+            }
+        });
     }
 
     /**

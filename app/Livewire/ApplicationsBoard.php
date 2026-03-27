@@ -62,6 +62,7 @@ class ApplicationsBoard extends Component
     public $editInterviewPlatform;
     public $editInterviewAddress;
     public $editingIsInterview = false;
+    public $editingCurrentStatus = null;
 
     public $interviewDate;
     public $interviewTime;
@@ -154,6 +155,106 @@ class ApplicationsBoard extends Component
         $this->resetEditForm();
     }
 
+    public function moveEditingApplicationToNextStage(): void
+    {
+        if (!$this->editingApplicationId) {
+            return;
+        }
+
+        $application = $this->service->findForUser($this->editingApplicationId, Auth::id());
+
+        if (!$application) {
+            return;
+        }
+
+        $currentStatus = $this->resolveStatus($application);
+
+        $nextStageMap = [
+            'applied' => 'waiting',
+            'waiting' => 'interview',
+            'interview' => 'offer',
+        ];
+
+        $nextStatus = $nextStageMap[$currentStatus] ?? null;
+
+        if (!$nextStatus) {
+            session()->flash('status', 'This application is already in the final stage.');
+            return;
+        }
+
+        // For interview transitions, always collect date/time through interview modal.
+        if ($nextStatus === 'interview') {
+            $applicationId = $application->id;
+            $this->closeEditModal();
+            $this->prepareInterviewMove($applicationId);
+            return;
+        }
+
+        $this->service->move($application, $nextStatus);
+
+        session()->flash('status', 'Application moved to next stage successfully.');
+        $this->closeEditModal();
+    }
+
+    public function moveEditingApplicationToPreviousStage(): void
+    {
+        if (!$this->editingApplicationId) {
+            return;
+        }
+
+        $application = $this->service->findForUser($this->editingApplicationId, Auth::id());
+
+        if (!$application) {
+            return;
+        }
+
+        $currentStatus = $this->resolveStatus($application);
+
+        $previousStageMap = [
+            'waiting' => 'applied',
+            'interview' => 'waiting',
+            'offer' => 'interview',
+        ];
+
+        $previousStatus = $previousStageMap[$currentStatus] ?? null;
+
+        if (!$previousStatus) {
+            session()->flash('status', 'This application cannot move back a stage.');
+            return;
+        }
+
+        // For interview transitions, always collect date/time through interview modal.
+        if ($previousStatus === 'interview') {
+            $applicationId = $application->id;
+            $this->closeEditModal();
+            $this->prepareInterviewMove($applicationId);
+            return;
+        }
+
+        $this->service->move($application, $previousStatus);
+
+        session()->flash('status', 'Application moved to previous stage successfully.');
+        $this->closeEditModal();
+    }
+
+    public function archiveEditingApplication(): void
+    {
+        if (!$this->editingApplicationId) {
+            return;
+        }
+
+        $application = $this->service->findForUser($this->editingApplicationId, Auth::id());
+
+        if (!$application) {
+            return;
+        }
+
+        $this->service->move($application, 'archived');
+
+        session()->flash('status', 'Application archived successfully.');
+        $this->closeEditModal();
+    }
+
     // =========================================================================
     // Delete
     // =========================================================================
@@ -227,7 +328,7 @@ class ApplicationsBoard extends Component
     // =========================================================================
 
     #[On('moveApplication')]
-    public function moveApplication(?int $id = null, ?string $status = null): void
+    public function moveApplication(?int $id = null, ?string $status = null, array $orderedIds = []): void
     {
         if (!$id || !$status) {
             return;
@@ -246,9 +347,17 @@ class ApplicationsBoard extends Component
             return;
         }
 
+        $previousStatus = $application->status;
+
         $this->service->move($application, $status);
 
-        session()->flash('status', 'Application moved successfully.');
+        if (!empty($orderedIds)) {
+            $this->service->reorderForUserStatus(Auth::id(), $status, $orderedIds);
+        }
+
+        if ($previousStatus !== $status) {
+            session()->flash('status', 'Application moved successfully.');
+        }
     }
 
     // =========================================================================
@@ -431,6 +540,25 @@ class ApplicationsBoard extends Component
         return $reasons;
     }
 
+    private function buildCalendarApplications($applications): array
+    {
+        return $applications
+            ->filter(fn (Application $app) => !empty($app->applied_at))
+            ->sortByDesc('applied_at')
+            ->values()
+            ->map(fn (Application $app) => [
+                'id' => $app->id,
+                'company' => (string) ($app->company ?? ''),
+                'position' => (string) ($app->position ?? ''),
+                'status' => $this->resolveStatus($app),
+                'city' => (string) ($app->city ?? ''),
+                'location' => (string) ($app->location ?? ''),
+                'applied_at' => $app->applied_at?->format('Y-m-d'),
+                'applied_label' => $app->applied_at?->format('d/m/Y'),
+            ])
+            ->all();
+    }
+
     // =========================================================================
     // Render
     // =========================================================================
@@ -466,6 +594,7 @@ class ApplicationsBoard extends Component
         if ($this->isSearching) {
             $allApps = $filteredApps->merge($archived);
             $searchResults = $this->filterBySearch($allApps);
+            $calendarApplications = $this->buildCalendarApplications($filteredApps);
 
             return view('livewire.applications-board', [
                 'applied'           => collect(),
@@ -491,8 +620,11 @@ class ApplicationsBoard extends Component
                 'isSearching'       => $this->isSearching,
                 'searchQuery'       => $this->searchQuery,
                 'statusFilters'     => $this->statusFilters,
+                'calendarApplications' => $calendarApplications,
             ]);
         }
+
+        $calendarApplications = $this->buildCalendarApplications($filteredApps);
 
         return view('livewire.applications-board', [
             'applied'           => $filteredApps->where($statusField, 'applied'),
@@ -518,6 +650,7 @@ class ApplicationsBoard extends Component
             'isSearching'       => $this->isSearching,
             'searchQuery'       => $this->searchQuery,
             'statusFilters'     => $this->statusFilters,
+            'calendarApplications' => $calendarApplications,
         ]);
     }
 
@@ -555,6 +688,15 @@ class ApplicationsBoard extends Component
         });
     }
 
+    private function resolveStatus(Application $application): string
+    {
+        $status = $this->hasStageColumn()
+            ? ($application->stage ?: $application->status)
+            : $application->status;
+
+        return self::LEGACY_STAGE_MAP[$status] ?? $status;
+    }
+
     private function fillEditForm(Application $application): void
     {
         $this->editingApplicationId   = $application->id;
@@ -576,6 +718,7 @@ class ApplicationsBoard extends Component
         $this->editInterviewIsRemote  = (bool) $application->interview_is_remote;
         $this->editInterviewPlatform  = $application->interview_platform;
         $this->editInterviewAddress   = $application->interview_address;
+        $this->editingCurrentStatus   = $this->resolveStatus($application);
     }
 
     private function fillInterviewForm(Application $application): void
@@ -638,7 +781,7 @@ class ApplicationsBoard extends Component
             'location'         => [$this->hasLocationColumn() ? 'required' : 'nullable', 'string', 'max:255'],
             'applied_at'       => ['required', 'date'],
             'job_url'          => ['nullable', 'string', 'max:255'],
-            'personal_score'   => ['nullable', 'integer', 'between:0,10'],
+            'personal_score'   => ['nullable', 'numeric', 'between:0,10'],
             'salary_offered'   => ['nullable', 'numeric', 'min:0'],
             'salary_expected'  => ['nullable', 'numeric', 'min:0'],
         ];
@@ -653,7 +796,7 @@ class ApplicationsBoard extends Component
             'editLocation'         => [$this->hasLocationColumn() ? 'required' : 'nullable', 'string', 'max:255'],
             'editAppliedAt'        => ['required', 'date'],
             'editJobUrl'           => ['nullable', 'string', 'max:255'],
-            'editPersonalScore'    => ['nullable', 'integer', 'between:0,10'],
+            'editPersonalScore'    => ['nullable', 'numeric', 'between:0,10'],
             'editSalaryOffered'    => ['nullable', 'numeric', 'min:0'],
             'editSalaryExpected'   => ['nullable', 'numeric', 'min:0'],
             'editNotes'            => ['nullable', 'string'],
@@ -703,7 +846,7 @@ class ApplicationsBoard extends Component
             'editSalaryOffered', 'editSalaryExpected', 'editNotes',
             'editInterviewDate', 'editInterviewTime', 'editInterviewLocation',
             'editInterviewIsRemote', 'editInterviewPlatform', 'editInterviewAddress',
-            'editingIsInterview',
+            'editingIsInterview', 'editingCurrentStatus',
         ]);
 
         $this->editInterviewIsRemote = false;

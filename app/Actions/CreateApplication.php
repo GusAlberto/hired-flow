@@ -15,11 +15,24 @@ class CreateApplication
 
     public function execute(array $data, int $userId): Application
     {
+        $status = 'applied';
+
         return Application::create([
             'user_id' => $userId,
-            'status'  => 'applied',
+            'status'  => $status,
+            ...($this->hasSortOrderColumn() ? ['sort_order' => $this->nextSortOrder($userId, $status)] : []),
             ...$this->buildPayload($data),
         ]);
+    }
+
+    private function nextSortOrder(int $userId, string $status): int
+    {
+        $max = (int) Application::query()
+            ->where('user_id', $userId)
+            ->where('status', $status)
+            ->max('sort_order');
+
+        return $max + 1;
     }
 
     private function buildPayload(array $data): array

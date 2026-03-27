@@ -60,6 +60,15 @@ class ApplicationService
         $this->moveAction->execute($application, $status);
     }
 
+    public function reorderForUserStatus(int $userId, string $status, array $orderedIds): void
+    {
+        if (!$this->hasSortOrderColumn()) {
+            return;
+        }
+
+        $this->repository->reorderForUserStatus($userId, $status, $orderedIds);
+    }
+
     public function scheduleInterview(Application $application, array $data): void
     {
         Gate::authorize('scheduleInterview', $application);
