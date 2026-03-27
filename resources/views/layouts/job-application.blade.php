@@ -32,7 +32,7 @@
                     Board
                 </a>
                 <a href="{{ route('applications.create') }}"
-                    class="flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition {{ $activeMenu === 'applications.create' ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">
+                    class="flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition {{ $activeMenu === 'applications.create' ? 'bg-[#0D1B2A] text-white' : 'text-slate-700 hover:bg-slate-100' }}">
                     New application
                 </a>
                 <a href="{{ route('settings.index') }}"
