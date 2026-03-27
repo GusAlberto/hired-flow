@@ -52,6 +52,15 @@
         </div>
     </div>
 
+    <div class="mb-6 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm">
+        <p class="text-lg font-bold text-slate-800">
+            Hi, {{ auth()->user()->name ?? 'there' }}!
+        </p>
+        <p class="mt-1 text-xs font-medium text-slate-600">
+            Follow your job opportunities and applications in real time.
+        </p>
+    </div>
+
     <x-dashboard.dashboard-container :showDuplicates="$showDuplicates">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-5">
             <div class="rounded-2xl bg-white p-5 shadow">
