@@ -222,6 +222,46 @@
                     @endif
                 </div>
             @endif
+
+            @if ($showDuplicates)
+                @php
+                    $duplicatedApplications = collect([$applied, $waiting, $interview, $rejected, $offer])
+                        ->flatten(1)
+                        ->unique('id')
+                        ->values();
+                @endphp
+
+                <div class="mt-8 rounded-2xl border border-red-200 bg-white p-4 shadow-sm">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900">Duplicated applications</h2>
+                        <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+                            {{ $duplicatedApplications->count() }} items
+                        </span>
+                    </div>
+
+                    @if ($duplicatedApplications->isEmpty())
+                        <div
+                            class="rounded-xl border border-dashed border-red-200 bg-red-50 px-4 py-6 text-center text-sm text-red-700">
+                            No duplicated applications found.
+                        </div>
+                    @else
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            @foreach ($duplicatedApplications as $app)
+                                <article class="rounded-2xl border border-red-100 bg-red-50/40 px-4 py-3"
+                                    wire:key="duplicated-{{ $app->id }}">
+                                    <div class="text-sm font-semibold text-gray-900 uppercase">{{ $app->position }}</div>
+                                    <div class="text-sm text-gray-700">{{ $app->company }}</div>
+                                    <div class="mt-1 text-xs text-gray-500">Applied:
+                                        {{ $app->applied_at?->format('d/m/Y') ?? '-' }}</div>
+                                    <div class="mt-1 text-xs text-red-700">
+                                        {{ $duplicateReasons[$app->id] ?? 'Duplicate by matching data with another application.' }}
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            @endif
             
             @include('livewire.search-results', [
                 'searchResults' => $searchResults,
