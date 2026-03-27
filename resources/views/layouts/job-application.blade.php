@@ -14,7 +14,7 @@
 
 <body class="h-screen overflow-hidden bg-slate-100 text-slate-900 antialiased">
     <div class="flex h-screen overflow-hidden">
-        <aside class="hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white p-5 lg:flex lg:flex-col lg:sticky lg:top-0">
+        <aside class="hidden h-screen w-56 shrink-0 border-r border-slate-200 bg-white p-5 lg:flex lg:flex-col lg:sticky lg:top-0">
             <div class="mb-8">
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">HiredFlow</p>
                 <p class="mt-1 text-2xl font-black tracking-tight text-slate-900">Applications</p>
