@@ -233,7 +233,7 @@
     <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div class="relative w-full md:max-w-md">
-                <input type="text" wire:model.live="searchQuery" placeholder="Search in kanban..."
+                <input type="text" wire:model.live.debounce.400ms="searchQuery" placeholder="Search in kanban..."
                     class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#415A77] focus:outline-none focus:ring-2 focus:ring-[#415A77]/25" />
                 <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
                     viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

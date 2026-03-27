@@ -602,7 +602,7 @@ class ApplicationsBoard extends Component
         if ($this->isSearching && !$this->isBoardPage) {
             $allApps = $filteredApps->merge($archived);
             $searchResults = $this->filterBySearch($allApps);
-            $calendarApplications = $this->buildCalendarApplications($filteredApps);
+            $calendarApplications = $this->isBoardPage ? [] : $this->buildCalendarApplications($filteredApps);
 
             return view('livewire.applications-board', [
                 'applied'           => collect(),
@@ -632,7 +632,7 @@ class ApplicationsBoard extends Component
             ]);
         }
 
-        $calendarApplications = $this->buildCalendarApplications($filteredApps);
+        $calendarApplications = $this->isBoardPage ? [] : $this->buildCalendarApplications($filteredApps);
 
         return view('livewire.applications-board', [
             'applied'           => $filteredApps->where($statusField, 'applied'),
