@@ -540,6 +540,25 @@ class ApplicationsBoard extends Component
         return $reasons;
     }
 
+    private function buildCalendarApplications($applications): array
+    {
+        return $applications
+            ->filter(fn (Application $app) => !empty($app->applied_at))
+            ->sortByDesc('applied_at')
+            ->values()
+            ->map(fn (Application $app) => [
+                'id' => $app->id,
+                'company' => (string) ($app->company ?? ''),
+                'position' => (string) ($app->position ?? ''),
+                'status' => $this->resolveStatus($app),
+                'city' => (string) ($app->city ?? ''),
+                'location' => (string) ($app->location ?? ''),
+                'applied_at' => $app->applied_at?->format('Y-m-d'),
+                'applied_label' => $app->applied_at?->format('d/m/Y'),
+            ])
+            ->all();
+    }
+
     // =========================================================================
     // Render
     // =========================================================================
@@ -575,6 +594,7 @@ class ApplicationsBoard extends Component
         if ($this->isSearching) {
             $allApps = $filteredApps->merge($archived);
             $searchResults = $this->filterBySearch($allApps);
+            $calendarApplications = $this->buildCalendarApplications($filteredApps);
 
             return view('livewire.applications-board', [
                 'applied'           => collect(),
@@ -600,8 +620,11 @@ class ApplicationsBoard extends Component
                 'isSearching'       => $this->isSearching,
                 'searchQuery'       => $this->searchQuery,
                 'statusFilters'     => $this->statusFilters,
+                'calendarApplications' => $calendarApplications,
             ]);
         }
+
+        $calendarApplications = $this->buildCalendarApplications($filteredApps);
 
         return view('livewire.applications-board', [
             'applied'           => $filteredApps->where($statusField, 'applied'),
@@ -627,6 +650,7 @@ class ApplicationsBoard extends Component
             'isSearching'       => $this->isSearching,
             'searchQuery'       => $this->searchQuery,
             'statusFilters'     => $this->statusFilters,
+            'calendarApplications' => $calendarApplications,
         ]);
     }
 

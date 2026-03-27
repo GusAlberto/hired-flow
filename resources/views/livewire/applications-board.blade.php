@@ -99,6 +99,8 @@
         </div>
     </x-dashboard.container>
 
+    <x-dashboard.applications-calendar-card :calendarApplications="$calendarApplications" />
+
     @if ($showFavoritesOnly)
         <div
             class="mb-4 flex items-center justify-between rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
@@ -502,3 +504,4 @@
     document.addEventListener('livewire:load', initSortables)
     document.addEventListener('livewire:navigated', initSortables)
 </script>
+
