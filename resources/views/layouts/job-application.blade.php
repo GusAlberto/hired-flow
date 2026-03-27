@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Applications') | {{ config('app.name', 'HiredFlow') }}</title>
+    @php($pageTitle = ($title ?? trim($__env->yieldContent('title')) ?: (request()->routeIs('board') ? 'Board' : 'Applications')))
+    <title>{{ $pageTitle }} | {{ config('app.name', 'HiredFlow') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -17,12 +18,16 @@
                 <p class="mt-1 text-2xl font-black tracking-tight text-slate-900">Applications</p>
             </div>
 
-            @php($activeMenu = trim($__env->yieldContent('activeMenu')))
+            @php($activeMenu = ($activeMenu ?? trim($__env->yieldContent('activeMenu')) ?: (request()->route()?->getName() ?? '')))
 
             <nav class="space-y-2">
                 <a href="{{ route('dashboard') }}"
                     class="flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition {{ $activeMenu === 'dashboard' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100' }}">
                     Dashboard
+                </a>
+                <a href="{{ route('board') }}"
+                    class="flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition {{ $activeMenu === 'board' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100' }}">
+                    Board
                 </a>
                 <a href="{{ route('applications.create') }}"
                     class="flex items-center rounded-xl px-4 py-3 text-sm font-semibold transition {{ $activeMenu === 'applications.create' ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100' }}">
@@ -54,13 +59,24 @@
             <header class="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <h2 class="text-lg font-black tracking-tight text-slate-900">@yield('title', 'Applications')</h2>
+                        @if (isset($title) && trim((string) $title) !== '')
+                            <h2 class="text-lg font-black tracking-tight text-slate-900">{{ $title }}</h2>
+                        @else
+                            <h2 class="text-lg font-black tracking-tight text-slate-900">@yield('title', 'Applications')</h2>
+                        @endif
                         <p class="text-xs text-slate-500">Keep your process clean and centralized.</p>
                     </div>
-                    <a href="{{ route('dashboard') }}"
-                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-                        Back to dashboard
-                    </a>
+                    @if ($activeMenu === 'board')
+                        <a href="{{ route('applications.create') }}"
+                            class="inline-flex items-center rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800">
+                            Create application
+                        </a>
+                    @else
+                        <a href="{{ route('dashboard') }}"
+                            class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
+                            Back to dashboard
+                        </a>
+                    @endif
                 </div>
             </header>
 
@@ -71,7 +87,11 @@
                     </div>
                 @endif
 
-                @yield('content')
+                @if (isset($slot))
+                    {{ $slot }}
+                @else
+                    @yield('content')
+                @endif
             </main>
         </div>
     </div>
