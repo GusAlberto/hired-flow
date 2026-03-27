@@ -70,7 +70,7 @@
                     </div>
                     @if (in_array($activeMenu, ['board', 'dashboard'], true))
                         <a href="{{ route('applications.create') }}"
-                            class="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-sky-700 hover:to-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-1 active:scale-[0.99]">
+                            class="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-[#0D1B2A] px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#415A77] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#415A77] focus:ring-offset-1 active:scale-[0.99]">
                             <span
                                 class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/25 text-xs font-bold">+</span>
                             Create application
@@ -84,7 +84,7 @@
                 </div>
             </header>
 
-            <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            <main class="flex-1 px-6 py-2 sm:px-6 lg:px-8">
                 @if (session('status'))
                     <div
                         class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
