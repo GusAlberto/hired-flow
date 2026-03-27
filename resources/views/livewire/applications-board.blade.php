@@ -16,44 +16,6 @@
         </div>
     @endif
 
-    {{--
-    <div class="mb-6 flex flex-wrap items-center gap-3 sm:flex-nowrap">
-        <!-- Search Input -->
-        <div class="relative w-full sm:w-[170px] sm:max-w-[170px] sm:flex-none">
-            <input type="text" wire:model.live="searchQuery"
-                class="block w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" />
-
-            @if (trim($searchQuery ?? '') === '')
-                <div class="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 text-gray-400">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round"
-                            stroke-linejoin="round" stroke-width="2"></path>
-                    </svg>
-                    <span class="text-sm">Search applications...</span>
-                </div>
-            @endif
-        </div>
-
-        <!-- Status Filter Dropdown -->
-        <div class="relative min-w-[140px]">
-            <select wire:change="updateStatusFilters($event.target.value)"
-                class="appearance-none w-full bg-white border border-gray-200 text-gray-700 py-2 pl-3 pr-10 rounded-lg text-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <option value="">All Status</option>
-                <option value="applied">Applied</option>
-                <option value="waiting">Waiting</option>
-                <option value="interview">Interview</option>
-                <option value="rejected">Rejected</option>
-                <option value="offer">Offer</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-                </svg> 
-            </div>
-        </div>
-    </div>
-    --}}
-    
     @unless ($isBoardPage)
     <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
     <div class="mb-6 rounded-2xl border border-slate-200 bg-white/80 px-7 py-4 shadow-sm">
