@@ -71,10 +71,13 @@
                 </div> --}}
 
                 <!-- Tracked Dates Box -->
-                <div class="rounded-2xl border border-cyan-200 bg-white/90 px-4 py-3 shadow-sm">
+                <div
+                    class="group relative overflow-hidden rounded-3xl border border-slate-300/80 bg-gradient-to-br from-slate-100 via-white to-zinc-100 px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+                    <div class="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-slate-300/30 blur-xl"></div>
+                    <div class="pointer-events-none absolute -bottom-6 left-2 h-14 w-14 rounded-full bg-zinc-300/30 blur-xl"></div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Tracked dates</span>
-                        <svg class="h-4 w-4 text-cyan-600" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-600">Tracked dates</span>
+                        <svg class="h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor"
                                 stroke-width="2" />
                             <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor"
@@ -85,7 +88,7 @@
                                 stroke-width="2" />
                         </svg>
                     </div>
-                    <div class="mt-1 text-3xl font-black text-cyan-700" x-text="Object.keys(byDate).length"></div>
+                    <div class="mt-1 text-3xl font-black text-slate-900" x-text="Object.keys(byDate).length"></div>
                 </div>
             </div>
         </div>
