@@ -38,7 +38,8 @@
         $interviewRate = $total > 0 ? round(($interviews / $total) * 100) : 0;
     @endphp
 
-    <section class="mb-6 rounded-3xl border border-slate-300/80 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-5 shadow-sm">
+    <div class="space-y-4">
+    <section class="rounded-3xl border border-slate-300/80 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-5 shadow-sm">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h3 class="text-sm font-black uppercase tracking-[0.18em] text-slate-700">Daily reminders</h3>
@@ -134,6 +135,7 @@
     </x-dashboard.dashboard-container>
 
     <x-dashboard.applications-calendar-card :calendarApplications="$calendarApplications" />
+    </div>
 
     @if ($showFavoritesOnly)
         <div

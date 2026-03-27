@@ -1,6 +1,6 @@
 @props(['calendarApplications' => []])
 
-<section x-data="window.applicationsCalendarCard ? window.applicationsCalendarCard() : {}" class="mb-8">
+<section x-data="window.applicationsCalendarCard ? window.applicationsCalendarCard() : {}" class="mb-0">
     <style>
         [x-cloak] {
             display: none !important;
