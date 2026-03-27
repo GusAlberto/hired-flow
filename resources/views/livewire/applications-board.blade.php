@@ -171,30 +171,71 @@
 
                 <x-dashboard.applications-calendar-card :calendarApplications="$calendarApplications" />
 
-                @if ($showDuplicates)
-                    <div
-                        class="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                        <span>Showing only duplicated applications. A card is marked as duplicated when it has the same key
-                        information as another one.</span>
-                        <button type="button" wire:click="clearDuplicatesFilter" class="font-semibold underline">
-                            Clear filter
-                        </button>
-                    </div>
-                @endif
+
             </div>
 
             @if ($showFavoritesOnly)
+                <div class="my-4 flex items-center" aria-hidden="true">
+                    <div class="h-px w-full bg-gray-300"></div>
+                </div>
                 <div
-                    class="mt-8 flex items-center justify-between rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+                    class="mt-4 flex items-center justify-between rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
                     <span>Showing only favorite applications.</span>
                     <button type="button" wire:click="clearFavoritesFilter" class="font-semibold underline">
                         Clear filter
                     </button>
                 </div>
+
+                @php
+                    $favoriteApplications = collect([$applied, $waiting, $interview, $rejected, $offer])
+                        ->flatten(1)
+                        ->filter(fn($app) => (bool) ($app->is_favorite ?? false))
+                        ->unique('id')
+                        ->values();
+                @endphp
+
+                <div class="mt-4 rounded-2xl border border-yellow-200 bg-white p-4 shadow-sm">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900">Favorite applications</h2>
+                        <span class="rounded-full bg-yellow-50 px-3 py-1 text-xs font-semibold text-yellow-700">
+                            {{ $favoriteApplications->count() }} items
+                        </span>
+                    </div>
+
+                    @if ($favoriteApplications->isEmpty())
+                        <div
+                            class="rounded-xl border border-dashed border-yellow-200 bg-yellow-50 px-4 py-6 text-center text-sm text-yellow-800">
+                            No favorite applications found.
+                        </div>
+                    @else
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            @foreach ($favoriteApplications as $app)
+                                <article class="rounded-2xl border border-yellow-100 bg-yellow-50/40 px-4 py-3"
+                                    wire:key="favorite-{{ $app->id }}">
+                                    <div class="text-sm font-semibold text-gray-900 uppercase">{{ $app->position }}</div>
+                                    <div class="text-sm text-gray-700">{{ $app->company }}</div>
+                                    <div class="mt-1 text-xs text-gray-500">Applied:
+                                        {{ $app->applied_at?->format('d/m/Y') ?? '-' }}</div>
+                                </article>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
             @endif
 
             @if ($showArchivedSection)
-                <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div class="my-4 flex items-center" aria-hidden="true">
+                    <div class="h-px w-full bg-gray-300"></div>
+                </div>
+                <div
+                    class="mt-4 flex items-center justify-between rounded-xl border border-black-800 bg-gray-100 px-4 py-3 text-sm text-gray-800">
+                    <span>Showing only archived applications</span>
+                    <button type="button" wire:click="clearArchivedsFilter" class="font-semibold underline">
+                        Clear filter
+                    </button>
+                </div>
+
+                <div class="mt-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                     <div class="mb-4 flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-900">Archived applications</h2>
                         <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
@@ -224,6 +265,17 @@
             @endif
 
             @if ($showDuplicates)
+                <div class="my-4 flex items-center" aria-hidden="true">
+                    <div class="h-px w-full bg-gray-300"></div>
+                </div>
+                <div
+                    class="mt-4 flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                    <span>Showing only duplicated applications. A card is marked as duplicated when it has the same key
+                        information as another one.</span>
+                    <button type="button" wire:click="clearDuplicatesFilter" class="font-semibold underline">
+                        Clear filter
+                    </button>
+                </div>
                 @php
                     $duplicatedApplications = collect([$applied, $waiting, $interview, $rejected, $offer])
                         ->flatten(1)
@@ -231,7 +283,7 @@
                         ->values();
                 @endphp
 
-                <div class="mt-8 rounded-2xl border border-red-200 bg-white p-4 shadow-sm">
+                <div class="mt-4 rounded-2xl border border-red-200 bg-white p-4 shadow-sm">
                     <div class="mb-4 flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-gray-900">Duplicated applications</h2>
                         <span class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
@@ -262,7 +314,7 @@
                     @endif
                 </div>
             @endif
-            
+
             @include('livewire.search-results', [
                 'searchResults' => $searchResults,
                 'searchQuery' => $searchQuery,
@@ -283,13 +335,15 @@
         <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div class="relative w-full md:max-w-md">
-                    <input type="text" wire:model.live.debounce.400ms="searchQuery" placeholder="Search in kanban..."
+                    <input type="text" wire:model.live.debounce.400ms="searchQuery"
+                        placeholder="Search in kanban..."
                         class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#415A77] focus:outline-none focus:ring-2 focus:ring-[#415A77]/25" />
                     <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
                         viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path
                             d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
-                            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                            stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                            stroke-linejoin="round" />
                     </svg>
                 </div>
 

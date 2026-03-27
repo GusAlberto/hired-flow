@@ -495,6 +495,11 @@ class ApplicationsBoard extends Component
         $this->showDuplicates = false;
     }
 
+    public function clearArchivedsFilter(): void
+    {
+        $this->showArchivedSection = false;
+    }
+
     private function filterByStatus($collection): \Illuminate\Support\Collection
     {
         if (empty($this->statusFilters)) {
