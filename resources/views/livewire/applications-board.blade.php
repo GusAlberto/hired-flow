@@ -1,11 +1,11 @@
 <div class="p-8">
     @php
         $columns = [
-            'applied' => ['label' => 'Applied', 'items' => $applied],
-            'waiting' => ['label' => 'Waiting', 'items' => $waiting],
-            'interview' => ['label' => 'Interview', 'items' => $interview],
-            'rejected' => ['label' => 'Rejected', 'items' => $rejected],
-            'offer' => ['label' => 'Offer', 'items' => $offer],
+            'applied' => ['label' => 'Applied', 'items' => $applied, 'total' => $columnTotals['applied'] ?? $applied->count(), 'remaining' => $columnRemaining['applied'] ?? 0],
+            'waiting' => ['label' => 'Waiting', 'items' => $waiting, 'total' => $columnTotals['waiting'] ?? $waiting->count(), 'remaining' => $columnRemaining['waiting'] ?? 0],
+            'interview' => ['label' => 'Interview', 'items' => $interview, 'total' => $columnTotals['interview'] ?? $interview->count(), 'remaining' => $columnRemaining['interview'] ?? 0],
+            'rejected' => ['label' => 'Rejected', 'items' => $rejected, 'total' => $columnTotals['rejected'] ?? $rejected->count(), 'remaining' => $columnRemaining['rejected'] ?? 0],
+            'offer' => ['label' => 'Offer', 'items' => $offer, 'total' => $columnTotals['offer'] ?? $offer->count(), 'remaining' => $columnRemaining['offer'] ?? 0],
         ];
     @endphp
 
@@ -273,7 +273,7 @@
                         <h2 class="font-bold text-gray-900">{{ $column['label'] }}</h2>
                         <span
                             class="inline-flex min-w-8 items-center justify-center rounded-full border border-gray-200 bg-white px-2.5 py-1 text-sm font-semibold text-gray-700">
-                            {{ $column['items']->count() }}
+                            {{ $column['total'] }}
                         </span>
                     </div>
 
@@ -463,6 +463,15 @@
                             <div
                                 class="rounded-2xl border border-dashed border-gray-300 bg-white/60 px-4 py-6 text-center text-sm text-gray-400">
                                 No applications in this column yet.
+                            </div>
+                        @endif
+
+                        @if ($isBoardPage && ($column['remaining'] ?? 0) > 0)
+                            <div class="pt-2">
+                                <button type="button" wire:click="loadMore('{{ $status }}')"
+                                    class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:bg-slate-50">
+                                    Load more ({{ $column['remaining'] }})
+                                </button>
                             </div>
                         @endif
                     </div>
