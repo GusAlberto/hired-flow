@@ -1,6 +1,4 @@
-@props([
-    'showDuplicates' => false,
-])
+@props([])
 
 <div x-data="{ expanded: true }"
     class="group relative mb-0 overflow-hidden rounded-3xl border border-slate-400/80 bg-gradient-to-br from-white via-slate-50 to-slate-200 p-5 shadow-xl shadow-slate-300/40 transition hover:shadow-2xl hover:shadow-slate-400/40">
@@ -24,12 +22,6 @@
     </div>
 
     <div x-show="expanded" x-transition.opacity.duration.150ms>
-        @if ($showDuplicates)
-            <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                Showing only duplicated applications. A card is marked as duplicated when it has the same key information as another one.
-            </div>
-        @endif
-
         {{ $slot }}
     </div>
 </div>
