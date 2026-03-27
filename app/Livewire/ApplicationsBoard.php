@@ -490,6 +490,11 @@ class ApplicationsBoard extends Component
         $this->showDuplicates = !$this->showDuplicates;
     }
 
+    public function clearDuplicatesFilter(): void
+    {
+        $this->showDuplicates = false;
+    }
+
     private function filterByStatus($collection): \Illuminate\Support\Collection
     {
         if (empty($this->statusFilters)) {

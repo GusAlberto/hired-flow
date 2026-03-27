@@ -172,9 +172,13 @@
                 <x-dashboard.applications-calendar-card :calendarApplications="$calendarApplications" />
 
                 @if ($showDuplicates)
-                    <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                        Showing only duplicated applications. A card is marked as duplicated when it has the same key
-                        information as another one.
+                    <div
+                        class="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                        <span>Showing only duplicated applications. A card is marked as duplicated when it has the same key
+                        information as another one.</span>
+                        <button type="button" wire:click="clearDuplicatesFilter" class="font-semibold underline">
+                            Clear filter
+                        </button>
                     </div>
                 @endif
             </div>
