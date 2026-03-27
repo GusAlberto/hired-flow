@@ -23,7 +23,7 @@
             </div>
 
             <div class="relative flex items-start gap-3">
-                <!-- Mini Calendar Box (non-interactive) -->
+                {{-- <!-- Mini Calendar Box (non-interactive) -->
                 <div class="rounded-2xl border border-cyan-200 bg-white/90 px-4 py-3 shadow-sm">
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Calendar</span>
@@ -68,7 +68,7 @@
                         <div class="h-2.5 w-2.5 rounded-sm bg-slate-300"></div>
                         <div class="h-2.5 w-2.5 rounded-sm bg-slate-300"></div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Tracked Dates Box -->
                 <div class="rounded-2xl border border-cyan-200 bg-white/90 px-4 py-3 shadow-sm">
