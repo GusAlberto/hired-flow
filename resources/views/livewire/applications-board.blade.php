@@ -1,4 +1,4 @@
-<div class="p-8">
+<div class="p-6">
     @php
         $columns = [
             'applied' => ['label' => 'Applied', 'items' => $applied, 'total' => $columnTotals['applied'] ?? $applied->count(), 'remaining' => $columnRemaining['applied'] ?? 0],

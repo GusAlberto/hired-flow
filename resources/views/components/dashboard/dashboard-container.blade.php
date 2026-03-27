@@ -8,11 +8,9 @@
     <div class="pointer-events-none absolute -bottom-14 left-6 h-32 w-32 rounded-full bg-slate-500/15 blur-2xl"></div>
 
     <div class="relative mb-4 flex items-center justify-center">
-        <h2 x-show="expanded" class="text-base font-black tracking-tight text-slate-800"
-            style="font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;">Dashboard cards</h2>
         <h2 x-show="!expanded" class="text-2xl font-black tracking-tight text-slate-800"
             style="font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;">Dashboard cards</h2>
-
+        
         <button type="button" @click="expanded = !expanded"
             class="absolute right-0 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-400/80 bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 hover:text-slate-800"
             :aria-expanded="expanded" aria-label="Toggle dashboard" title="Show or hide dashboard">
