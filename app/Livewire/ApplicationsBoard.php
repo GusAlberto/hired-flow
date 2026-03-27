@@ -581,6 +581,11 @@ class ApplicationsBoard extends Component
         // Apply status filters
         $filteredApps = $this->filterByStatus($activeApps);
 
+        // On board page, search should filter kanban cards directly.
+        if ($this->isBoardPage && $this->isSearching) {
+            $filteredApps = $this->filterBySearch($filteredApps);
+        }
+
         // Detect duplicate groups in active apps
         $duplicateGroups = $this->findDuplicateGroups($filteredApps);
         $duplicateIds = $duplicateGroups->flatten()->pluck('id')->all();
@@ -594,7 +599,7 @@ class ApplicationsBoard extends Component
         }
 
         // Apply search filter if searching
-        if ($this->isSearching) {
+        if ($this->isSearching && !$this->isBoardPage) {
             $allApps = $filteredApps->merge($archived);
             $searchResults = $this->filterBySearch($allApps);
             $calendarApplications = $this->buildCalendarApplications($filteredApps);

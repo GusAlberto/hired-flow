@@ -231,11 +231,21 @@
         :salaryExpected="$salary_expected" />
 
     <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <div class="mb-4 flex justify-end">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="relative w-full md:max-w-md">
+                <input type="text" wire:model.live="searchQuery" placeholder="Search in kanban..."
+                    class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-10 text-sm text-gray-700 focus:border-[#415A77] focus:outline-none focus:ring-2 focus:ring-[#415A77]/25" />
+                <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                    viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+
             <button type="button" wire:click="toggleKanbanOrientation" wire:loading.attr="disabled"
                 wire:loading.class="cursor-not-allowed opacity-60" wire:target="toggleKanbanOrientation"
                 aria-label="Toggle kanban orientation"
-                class="group relative inline-flex h-14 w-14 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100">
+                class="group relative inline-flex h-12 w-12 items-center justify-center rounded-xl border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100">
                 <svg class="h-5 w-5 transition-transform duration-300 ease-out"
                     style="transform: rotate({{ $kanbanOrientation === 'vertical' ? 90 : 0 }}deg)" viewBox="0 0 24 24"
                     fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
