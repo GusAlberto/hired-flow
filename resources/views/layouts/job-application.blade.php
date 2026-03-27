@@ -12,9 +12,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
-    <div class="flex min-h-screen">
-        <aside class="hidden w-72 shrink-0 border-r border-slate-200 bg-white p-5 lg:flex lg:flex-col">
+<body class="h-screen overflow-hidden bg-slate-100 text-slate-900 antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <aside class="hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white p-5 lg:flex lg:flex-col lg:sticky lg:top-0">
             <div class="mb-8">
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">HiredFlow</p>
                 <p class="mt-1 text-2xl font-black tracking-tight text-slate-900">Applications</p>
@@ -57,7 +57,7 @@
             </div>
         </aside>
 
-        <div class="flex min-h-screen flex-1 flex-col">
+        <div class="flex h-screen flex-1 flex-col overflow-hidden">
             <header class="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -84,7 +84,7 @@
                 </div>
             </header>
 
-            <main class="flex-1 px-6 py-2 sm:px-6 lg:px-8">
+            <main class="flex-1 overflow-y-auto px-6 py-2 sm:px-6 lg:px-8">
                 @if (session('status'))
                     <div
                         class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">

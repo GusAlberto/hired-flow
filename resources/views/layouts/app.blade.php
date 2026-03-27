@@ -10,9 +10,9 @@
         @livewireStyles
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="min-h-screen bg-slate-100 font-sans antialiased text-slate-900">
-        <div class="flex min-h-screen">
-            <aside class="hidden w-72 shrink-0 border-r border-slate-200 bg-white p-5 lg:flex lg:flex-col">
+    <body class="h-screen overflow-hidden bg-slate-100 font-sans antialiased text-slate-900">
+        <div class="flex h-screen overflow-hidden">
+            <aside class="hidden h-screen w-72 shrink-0 border-r border-slate-200 bg-white p-5 lg:flex lg:flex-col lg:sticky lg:top-0">
                 <div class="mb-8">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">HiredFlow</p>
                     <p class="mt-1 text-2xl font-black tracking-tight text-slate-900">Applications</p>
@@ -53,14 +53,14 @@
                 </div>
             </aside>
 
-            <div class="flex min-h-screen flex-1 flex-col">
+            <div class="flex h-screen flex-1 flex-col overflow-hidden">
                 @isset($header)
                     <header class="border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </header>
                 @endisset
 
-                <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                <main class="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
                     {{ $slot }}
                 </main>
             </div>
