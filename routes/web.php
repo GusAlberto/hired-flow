@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ApplicationPageController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\ApplicationsBoard;
 
@@ -25,6 +26,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', ApplicationsBoard::class)
         ->middleware('verified.when-enabled')
         ->name('dashboard');
+
+    Route::get('/applications/create', [ApplicationPageController::class, 'create'])
+        ->middleware('verified.when-enabled')
+        ->name('applications.create');
+
+    Route::post('/applications', [ApplicationPageController::class, 'store'])
+        ->middleware('verified.when-enabled')
+        ->name('applications.store');
 });
 
 require __DIR__ . '/auth.php';
