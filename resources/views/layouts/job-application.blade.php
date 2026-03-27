@@ -97,6 +97,8 @@
                 @else
                     @yield('content')
                 @endif
+
+                <x-site-footer />
             </main>
         </div>
     </div>
