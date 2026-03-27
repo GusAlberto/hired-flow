@@ -7,6 +7,8 @@
             'rejected' => ['label' => 'Rejected', 'items' => $rejected],
             'offer' => ['label' => 'Offer', 'items' => $offer],
         ];
+
+        $isBoardPage = request()->routeIs('board');
     @endphp
 
     @if (session('status'))
@@ -54,6 +56,7 @@
     </div>
     --}}
     
+    @unless ($isBoardPage)
     <div class="mb-6 rounded-2xl border border-slate-200 bg-white/80 px-7 py-4 shadow-sm">
         <p class="text-lg font-bold text-slate-800">
             Hi, {{ auth()->user()->name ?? 'there' }}!
@@ -220,22 +223,14 @@
     <div class="my-8 flex items-center" aria-hidden="true">
         <div class="h-px w-full bg-gray-300"></div>
     </div>
+    @endunless
 
+    @if ($isBoardPage)
     <x-modals.create-application-modal :isOpen="$isCreateFormOpen" :company="$company" :position="$position" :city="$city"
         :location="$location" :appliedAt="$applied_at" :jobUrl="$job_url" :personalScore="$personal_score" :salaryOffered="$salary_offered"
         :salaryExpected="$salary_expected" />
 
     <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h2 class="mb-4 text-center text-2xl font-black tracking-wide text-gray-800">Jobs</h2>
-
-        <div class="mb-3 flex items-center justify-center">
-            <button type="button" wire:click="openCreateForm"
-                class="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-sky-700 hover:to-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-1 active:scale-[0.99]">
-                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/25 text-xs font-bold">+</span>
-                <span>Create application</span>
-            </button>
-        </div>
-
         <div class="mb-4 flex justify-end">
             <button type="button" wire:click="toggleKanbanOrientation" wire:loading.attr="disabled"
                 wire:loading.class="cursor-not-allowed opacity-60" wire:target="toggleKanbanOrientation"
@@ -474,9 +469,11 @@
 
     <x-modals.interview-scheduling-modal :isOpen="$isInterviewModalOpen" :interviewDate="$interviewDate" :interviewTime="$interviewTime" :interviewIsRemote="$interviewIsRemote"
         :interviewPlatform="$interviewPlatform" :interviewAddress="$interviewAddress" />
+    @endif
 
 </div>
 
+@if ($isBoardPage)
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <script>
@@ -574,4 +571,5 @@
     document.addEventListener('livewire:load', initSortables)
     document.addEventListener('livewire:navigated', initSortables)
 </script>
+@endif
 

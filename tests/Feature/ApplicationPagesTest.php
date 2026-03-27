@@ -23,6 +23,12 @@ class ApplicationPagesTest extends TestCase
             ->assertRedirect('/login');
     }
 
+    public function test_board_requires_authentication(): void
+    {
+        $this->get('/board')
+            ->assertRedirect('/login');
+    }
+
     public function test_dashboard_requires_verified_email(): void
     {
         config()->set('auth.require_verified_email', true);
@@ -68,7 +74,26 @@ class ApplicationPagesTest extends TestCase
             ->get('/dashboard')
             ->assertOk()
             ->assertSeeText($visibleApplication->company)
-            ->assertDontSeeText('Hidden Company');
+            ->assertDontSeeText('Hidden Company')
+            ->assertDontSeeText('Switch to vertical view');
+    }
+
+    public function test_verified_user_can_access_board_page_with_kanban_content(): void
+    {
+        $user = User::factory()->create();
+
+        Application::factory()->for($user)->create([
+            'company' => 'Board Company',
+            'position' => 'Product Engineer',
+            'status' => 'applied',
+            'stage' => 'applied',
+        ]);
+
+        $this->actingAs($user)
+            ->get('/board')
+            ->assertOk()
+            ->assertSeeText('Switch to vertical view')
+            ->assertSeeText('Board Company');
     }
 
     public function test_dashboard_escapes_stored_content(): void
