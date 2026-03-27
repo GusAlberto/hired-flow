@@ -101,4 +101,51 @@ class ApplicationPagesTest extends TestCase
             ->assertOk()
             ->assertSeeText('Archiving Rules');
     }
+
+    public function test_create_application_page_requires_authentication(): void
+    {
+        $this->get('/applications/create')
+            ->assertRedirect('/login');
+    }
+
+    public function test_authenticated_user_can_open_create_application_page(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('applications.create'))
+            ->assertOk()
+            ->assertSeeText('Create application')
+            ->assertSeeText('New application');
+    }
+
+    public function test_authenticated_user_can_store_new_application_from_create_page(): void
+    {
+        $user = User::factory()->create();
+
+        $payload = [
+            'company' => 'Stripe',
+            'position' => 'Backend Engineer',
+            'city' => 'Sao Paulo',
+            'location' => 'Remote',
+            'applied_at' => '2026-03-27',
+            'job_url' => 'https://example.com/jobs/stripe-backend',
+            'personal_score' => 8.5,
+            'salary_offered' => 14000,
+            'salary_expected' => 16000,
+        ];
+
+        $this->actingAs($user)
+            ->post(route('applications.store'), $payload)
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('applications', [
+            'user_id' => $user->id,
+            'company' => 'Stripe',
+            'position' => 'Backend Engineer',
+            'status' => 'applied',
+            'stage' => 'applied',
+            'location' => 'Remote',
+        ]);
+    }
 }
