@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    @php($pageTitle = ($title ?? trim($__env->yieldContent('title')) ?: (request()->routeIs('board') ? 'Board' : 'Applications')))
+    @php($pageTitle = $title ?? trim($__env->yieldContent('title')) ?: (request()->routeIs('board') ? 'Board' : 'Applications'))
     <title>{{ $pageTitle }} | {{ config('app.name', 'HiredFlow') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="min-h-screen bg-slate-100 text-slate-900 antialiased">
     <div class="flex min-h-screen">
         <aside class="hidden w-72 shrink-0 border-r border-slate-200 bg-white p-5 lg:flex lg:flex-col">
@@ -18,7 +20,7 @@
                 <p class="mt-1 text-2xl font-black tracking-tight text-slate-900">Applications</p>
             </div>
 
-            @php($activeMenu = ($activeMenu ?? trim($__env->yieldContent('activeMenu')) ?: (request()->route()?->getName() ?? '')))
+            @php($activeMenu = $activeMenu ?? trim($__env->yieldContent('activeMenu')) ?: request()->route()?->getName() ?? '')
 
             <nav class="space-y-2">
                 <a href="{{ route('dashboard') }}"
@@ -68,7 +70,9 @@
                     </div>
                     @if ($activeMenu === 'board')
                         <a href="{{ route('applications.create') }}"
-                            class="inline-flex items-center rounded-lg bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800">
+                            class="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-r from-sky-600 to-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:from-sky-700 hover:to-blue-700 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-1 active:scale-[0.99]">
+                            <span
+                                class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/25 text-xs font-bold">+</span>
                             Create application
                         </a>
                     @else
@@ -82,7 +86,8 @@
 
             <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
                 @if (session('status'))
-                    <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                    <div
+                        class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
                         {{ session('status') }}
                     </div>
                 @endif
@@ -96,4 +101,5 @@
         </div>
     </div>
 </body>
+
 </html>
