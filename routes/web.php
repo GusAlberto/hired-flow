@@ -15,6 +15,10 @@ Route::get('/demo', function () {
     return view('demo');
 })->name('demo');
 
+Route::view('/terms', 'legal.terms')->name('terms');
+Route::view('/privacy', 'legal.privacy')->name('privacy');
+Route::view('/contact', 'legal.contact')->name('contact');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
