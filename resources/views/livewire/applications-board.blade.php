@@ -7,8 +7,6 @@
             'rejected' => ['label' => 'Rejected', 'items' => $rejected],
             'offer' => ['label' => 'Offer', 'items' => $offer],
         ];
-
-        $isBoardPage = request()->routeIs('board');
     @endphp
 
     @if (session('status'))

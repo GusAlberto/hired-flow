@@ -29,6 +29,7 @@ class ApplicationsBoard extends Component
     public $isSearching = false;
     public $statusFilters = [];
     public $showDuplicates = false;
+    public $isBoardPage = false;
 
     public $company;
     public $position;
@@ -75,6 +76,8 @@ class ApplicationsBoard extends Component
 
     public function mount(): void
     {
+        $this->isBoardPage = request()->routeIs('board');
+
         $orientation = session('kanban_orientation', 'horizontal');
         $this->kanbanOrientation = in_array($orientation, ['horizontal', 'vertical'], true)
             ? $orientation
