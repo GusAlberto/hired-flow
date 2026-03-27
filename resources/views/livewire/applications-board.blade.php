@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    <x-dashboard.container :showDuplicates="$showDuplicates">
+    <x-dashboard.dashboard-container :showDuplicates="$showDuplicates">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-5">
             <div class="rounded-2xl bg-white p-5 shadow">
                 <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total applications</div>
@@ -97,7 +97,7 @@
 
             <x-dashboard.duplicates-card :duplicateCount="$duplicateCount" :showDuplicates="$showDuplicates" />
         </div>
-    </x-dashboard.container>
+    </x-dashboard.dashboard-container>
 
     <x-dashboard.applications-calendar-card :calendarApplications="$calendarApplications" />
 
