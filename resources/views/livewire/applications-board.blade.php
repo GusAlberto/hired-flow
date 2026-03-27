@@ -55,6 +55,7 @@
     --}}
     
     @unless ($isBoardPage)
+    <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
     <div class="mb-6 rounded-2xl border border-slate-200 bg-white/80 px-7 py-4 shadow-sm">
         <p class="text-lg font-bold text-slate-800">
             Hi, {{ auth()->user()->name ?? 'there' }}!
@@ -220,6 +221,7 @@
 
     <div class="my-8 flex items-center" aria-hidden="true">
         <div class="h-px w-full bg-gray-300"></div>
+    </div>
     </div>
     @endunless
 

@@ -4,7 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ApplicationPageController;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\ApplicationsBoard;
+use App\Livewire\DashboardPage;
 use App\Livewire\BoardPage;
 
 Route::get('/', function () {
@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/settings/archiving', [SettingsController::class, 'updateArchiving'])->name('settings.archiving.update');
     Route::post('/settings/archiving/run-now', [SettingsController::class, 'runArchivingNow'])->name('settings.archiving.run-now');
     
-    Route::get('/dashboard', ApplicationsBoard::class)
+    Route::get('/dashboard', DashboardPage::class)
         ->middleware('verified.when-enabled')
         ->name('dashboard');
 
