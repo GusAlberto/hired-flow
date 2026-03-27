@@ -41,14 +41,29 @@
                             </div>
 
                             <div>
-                                <label for="location" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Work model</label>
-                                <select id="location" name="location"
-                                    class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-[#415A77] focus:outline-none focus:ring-2 focus:ring-[#415A77]/25">
-                                    <option value="">Select</option>
-                                    @foreach (['Remote', 'Hybrid', 'In person'] as $option)
-                                        <option value="{{ $option }}" @selected(old('location') === $option)>{{ $option }}</option>
-                                    @endforeach
-                                </select>
+                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Work model</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <input id="location_in_person" type="radio" name="location" value="In person" class="peer/in-person sr-only"
+                                        @checked(old('location') === 'In person')>
+                                    <label for="location_in_person"
+                                        class="inline-flex cursor-pointer items-center rounded-full border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-sm peer-checked/in-person:border-slate-700 peer-checked/in-person:bg-slate-800 peer-checked/in-person:text-white peer-checked/in-person:ring-2 peer-checked/in-person:ring-slate-300">
+                                        In person
+                                    </label>
+
+                                    <input id="location_remote" type="radio" name="location" value="Remote" class="peer/remote sr-only"
+                                        @checked(old('location') === 'Remote')>
+                                    <label for="location_remote"
+                                        class="inline-flex cursor-pointer items-center rounded-full border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-sm peer-checked/remote:border-slate-700 peer-checked/remote:bg-slate-800 peer-checked/remote:text-white peer-checked/remote:ring-2 peer-checked/remote:ring-slate-300">
+                                        Remote
+                                    </label>
+
+                                    <input id="location_hybrid" type="radio" name="location" value="Hybrid" class="peer/hybrid sr-only"
+                                        @checked(old('location') === 'Hybrid')>
+                                    <label for="location_hybrid"
+                                        class="inline-flex cursor-pointer items-center rounded-full border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:-translate-y-0.5 hover:border-slate-400 hover:shadow-sm peer-checked/hybrid:border-slate-700 peer-checked/hybrid:bg-slate-800 peer-checked/hybrid:text-white peer-checked/hybrid:ring-2 peer-checked/hybrid:ring-slate-300">
+                                        Hybrid
+                                    </label>
+                                </div>
                                 @error('location')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </div>
                         </div>
