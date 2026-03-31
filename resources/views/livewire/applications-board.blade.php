@@ -66,31 +66,23 @@
             <div class="space-y-4">
                 <section
                     class="rounded-3xl border border-slate-300/80 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-5 shadow-sm">
-                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                        <div>
+                    <div class=" flex flex-wrap items-start gap-3">
+                        <div class="min-w-0 flex-1">
                             <h3 class="text-sm font-black uppercase tracking-[0.18em] text-slate-700">Daily reminders</h3>
                             <p class="mt-1 text-xs text-slate-500">Stay on track with today's interview schedule.</p>
                         </div>
 
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span
-                                class="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-bold text-slate-700">
-                                {{ $today->format('D, d M') }}
-                            </span>
+                        <span
+                            class="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-bold text-slate-700">
+                            {{ $today->format('D, d M') }}
+                        </span>
 
-                            <span
-                                class="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                                Interviews today: {{ $todayInterviews->count() }}
-                            </span>
+                        <span
+                            class="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                            Interviews today: {{ $todayInterviews->count() }}
+                        </span>
 
-                            <span
-                                class="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                                Today schedule
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                        <div class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 md:ml-auto md:w-[24rem]">
                         <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Today schedule</p>
 
                         @if ($todayInterviews->isEmpty())
@@ -121,6 +113,7 @@
                                     interview(s) today.</p>
                             @endif
                         @endif
+                    </div>
                     </div>
                 </section>
 
