@@ -13,6 +13,9 @@ class ApplicationsBoard extends Component
 {
     use DetectsApplicationColumns;
 
+    private const BOARD_STATUSES = ['applied', 'waiting', 'interview', 'rejected', 'offer'];
+    private const BOARD_CHUNK_SIZE = 20;
+
     public const LEGACY_STAGE_MAP = [
         'aplicada' => 'applied',
         'aguardando' => 'waiting',
@@ -29,6 +32,8 @@ class ApplicationsBoard extends Component
     public $isSearching = false;
     public $statusFilters = [];
     public $showDuplicates = false;
+    public $isBoardPage = false;
+    public $columnVisibleLimits = [];
 
     public $company;
     public $position;
@@ -75,13 +80,19 @@ class ApplicationsBoard extends Component
 
     public function mount(): void
     {
+        $this->isBoardPage = request()->routeIs('board');
+
         $orientation = session('kanban_orientation', 'horizontal');
         $this->kanbanOrientation = in_array($orientation, ['horizontal', 'vertical'], true)
             ? $orientation
             : 'horizontal';
         
         // Initialize status filters - all statuses selected by default
-        $this->statusFilters = ['applied', 'waiting', 'interview', 'rejected', 'offer'];
+        $this->statusFilters = self::BOARD_STATUSES;
+
+        foreach (self::BOARD_STATUSES as $status) {
+            $this->columnVisibleLimits[$status] = self::BOARD_CHUNK_SIZE;
+        }
     }
 
     /** Inject the service via Livewire's boot hook (not serialised between requests). */
@@ -464,9 +475,29 @@ class ApplicationsBoard extends Component
         }
     }
 
+    public function loadMore(string $status): void
+    {
+        if (!in_array($status, self::BOARD_STATUSES, true)) {
+            return;
+        }
+
+        $current = (int) ($this->columnVisibleLimits[$status] ?? self::BOARD_CHUNK_SIZE);
+        $this->columnVisibleLimits[$status] = $current + self::BOARD_CHUNK_SIZE;
+    }
+
     public function toggleDuplicatesFilter(): void
     {
         $this->showDuplicates = !$this->showDuplicates;
+    }
+
+    public function clearDuplicatesFilter(): void
+    {
+        $this->showDuplicates = false;
+    }
+
+    public function clearArchivedsFilter(): void
+    {
+        $this->showArchivedSection = false;
     }
 
     private function filterByStatus($collection): \Illuminate\Support\Collection
@@ -578,6 +609,11 @@ class ApplicationsBoard extends Component
         // Apply status filters
         $filteredApps = $this->filterByStatus($activeApps);
 
+        // On board page, search should filter kanban cards directly.
+        if ($this->isBoardPage && $this->isSearching) {
+            $filteredApps = $this->filterBySearch($filteredApps);
+        }
+
         // Detect duplicate groups in active apps
         $duplicateGroups = $this->findDuplicateGroups($filteredApps);
         $duplicateIds = $duplicateGroups->flatten()->pluck('id')->all();
@@ -590,11 +626,27 @@ class ApplicationsBoard extends Component
             );
         }
 
+        $columnTotals = [];
+        $columnRemaining = [];
+        $columnItems = [];
+
+        foreach (self::BOARD_STATUSES as $status) {
+            $allForStatus = $filteredApps->where($statusField, $status)->values();
+            $totalCount = $allForStatus->count();
+            $limit = (int) ($this->columnVisibleLimits[$status] ?? self::BOARD_CHUNK_SIZE);
+
+            $columnTotals[$status] = $totalCount;
+            $columnRemaining[$status] = max(0, $totalCount - $limit);
+            $columnItems[$status] = $this->isBoardPage
+                ? $allForStatus->take($limit)->values()
+                : $allForStatus;
+        }
+
         // Apply search filter if searching
-        if ($this->isSearching) {
+        if ($this->isSearching && !$this->isBoardPage) {
             $allApps = $filteredApps->merge($archived);
             $searchResults = $this->filterBySearch($allApps);
-            $calendarApplications = $this->buildCalendarApplications($filteredApps);
+            $calendarApplications = $this->isBoardPage ? [] : $this->buildCalendarApplications($filteredApps);
 
             return view('livewire.applications-board', [
                 'applied'           => collect(),
@@ -602,6 +654,8 @@ class ApplicationsBoard extends Component
                 'interview'         => collect(),
                 'rejected'          => collect(),
                 'offer'             => collect(),
+                'columnTotals'      => array_fill_keys(self::BOARD_STATUSES, 0),
+                'columnRemaining'   => array_fill_keys(self::BOARD_STATUSES, 0),
                 'archived'          => collect(),
                 'searchResults'     => $searchResults,
                 'total'             => $filteredApps->count(),
@@ -624,14 +678,16 @@ class ApplicationsBoard extends Component
             ]);
         }
 
-        $calendarApplications = $this->buildCalendarApplications($filteredApps);
+        $calendarApplications = $this->isBoardPage ? [] : $this->buildCalendarApplications($filteredApps);
 
         return view('livewire.applications-board', [
-            'applied'           => $filteredApps->where($statusField, 'applied'),
-            'waiting'           => $filteredApps->where($statusField, 'waiting'),
-            'interview'         => $filteredApps->where($statusField, 'interview'),
-            'rejected'          => $filteredApps->where($statusField, 'rejected'),
-            'offer'             => $filteredApps->where($statusField, 'offer'),
+            'applied'           => $columnItems['applied'],
+            'waiting'           => $columnItems['waiting'],
+            'interview'         => $columnItems['interview'],
+            'rejected'          => $columnItems['rejected'],
+            'offer'             => $columnItems['offer'],
+            'columnTotals'      => $columnTotals,
+            'columnRemaining'   => $columnRemaining,
             'archived'          => $archived,
             'searchResults'     => collect(),
             'total'             => $filteredApps->count(),
