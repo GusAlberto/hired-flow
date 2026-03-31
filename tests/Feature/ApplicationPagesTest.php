@@ -99,19 +99,26 @@ class ApplicationPagesTest extends TestCase
     public function test_dashboard_escapes_stored_content(): void
     {
         $user = User::factory()->create();
+        $payload = '<script>alert("xss")</script>';
 
         Application::factory()->for($user)->create([
-            'company' => '<script>alert("xss")</script>',
+            'company' => $payload,
             'position' => 'Security Engineer',
             'status' => 'applied',
             'stage' => 'applied',
         ]);
 
-        $this->actingAs($user)
-            ->get('/dashboard')
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response
             ->assertOk()
-            ->assertDontSee('<script>alert("xss")</script>', false)
-            ->assertSee('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;', false);
+            ->assertDontSee($payload, false);
+
+        // Accept safe output in either HTML context or JSON-escaped context.
+        $this->assertMatchesRegularExpression(
+            '/(?:&lt;script&gt;alert\(&quot;xss&quot;\)&lt;\/script&gt;|\\\\u003Cscript\\\\u003Ealert\(\\\\u0022xss\\\\u0022\)\\\\u003C\\\\\/script\\\\u003E)/',
+            $response->getContent()
+        );
     }
 
     public function test_settings_page_is_available_only_to_authenticated_users(): void
