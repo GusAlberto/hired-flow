@@ -71,51 +71,57 @@
                             <h3 class="text-sm font-black uppercase tracking-[0.18em] text-slate-700">Daily reminders</h3>
                             <p class="mt-1 text-xs text-slate-500">Stay on track with today's interview schedule.</p>
                         </div>
-                        <span
-                            class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                            {{ $today->format('D, d M') }}
-                        </span>
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span
+                                class="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-bold text-slate-700">
+                                {{ $today->format('D, d M') }}
+                            </span>
+
+                            <span
+                                class="rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                                Interviews today: {{ $todayInterviews->count() }}
+                            </span>
+
+                            <span
+                                class="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                                Today schedule
+                            </span>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-                            <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Interviews today</p>
-                            <p class="mt-2 text-4xl font-black leading-none text-amber-700">{{ $todayInterviews->count() }}
-                            </p>
-                        </div>
+                    <div class="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Today schedule</p>
 
-                        <div class="col-span-1 md:col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Today schedule</p>
-
-                            @if ($todayInterviews->isEmpty())
-                                <p class="mt-2 text-sm text-slate-500">No interviews scheduled for today. Great time to
-                                    apply to new opportunities.</p>
-                            @else
-                                <div class="mt-2 space-y-2">
-                                    @foreach ($todayInterviews->take(3) as $app)
-                                        <div
-                                            class="flex flex-wrap items-start gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                                            <div class="min-w-0 flex-1">
-                                                <p class="truncate text-sm font-semibold text-slate-800">
-                                                    {{ $app->position }} · {{ $app->company }}</p>
-                                                <p class="text-xs text-slate-500">
-                                                    {{ $app->interview_is_remote ? 'Remote' : ($app->interview_location ?: 'Interview') }}
-                                                </p>
-                                            </div>
-                                            <span
-                                                class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700 whitespace-nowrap">
-                                                {{ $app->interview_time ? \Illuminate\Support\Carbon::parse($app->interview_time)->format('H:i') : 'TBA' }}
-                                            </span>
+                        @if ($todayInterviews->isEmpty())
+                            <p class="mt-2 text-sm text-slate-500">No interviews scheduled for today. Great time to
+                                apply to new opportunities.</p>
+                        @else
+                            <div class="mt-2 space-y-2">
+                                @foreach ($todayInterviews->take(3) as $app)
+                                    <div
+                                        class="flex flex-wrap items-start gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="truncate text-sm font-semibold text-slate-800">
+                                                {{ $app->position }} · {{ $app->company }}</p>
+                                            <p class="text-xs text-slate-500">
+                                                {{ $app->interview_is_remote ? 'Remote' : ($app->interview_location ?: 'Interview') }}
+                                            </p>
                                         </div>
-                                    @endforeach
-                                </div>
+                                        <span
+                                            class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700 whitespace-nowrap">
+                                            {{ $app->interview_time ? \Illuminate\Support\Carbon::parse($app->interview_time)->format('H:i') : 'TBA' }}
+                                        </span>
+                                    </div>
+                                @endforeach
+                            </div>
 
-                                @if ($todayInterviews->count() > 3)
-                                    <p class="mt-2 text-xs text-slate-500">+{{ $todayInterviews->count() - 3 }} more
-                                        interview(s) today.</p>
-                                @endif
+                            @if ($todayInterviews->count() > 3)
+                                <p class="mt-2 text-xs text-slate-500">+{{ $todayInterviews->count() - 3 }} more
+                                    interview(s) today.</p>
                             @endif
-                        </div>
+                        @endif
+                    </div>
                 </section>
 
                 <x-dashboard.dashboard-container>
