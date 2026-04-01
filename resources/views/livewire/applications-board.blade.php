@@ -42,80 +42,101 @@
     @endif
 
     @unless ($isBoardPage)
-        <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div class="mb-6 rounded-2xl border border-slate-200 bg-white/80 px-7 py-4 shadow-sm">
-                <p class="text-lg font-bold text-slate-800">
-                    Hi, {{ auth()->user()->name ?? 'there' }}!
-                </p>
-                <p class="mt-1 text-md font-medium text-slate-600">
-                    Follow your job opportunities and applications in real time.
-                </p>
-            </div>
-
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             @php
                 $today = now();
                 $todayInterviews = $interview
                     ->filter(fn($app) => $app->interview_date && $app->interview_date->isSameDay($today))
                     ->sortBy('interview_time')
                     ->values();
+                $todayTime = $today->format('H:i');
+                $todayTimezone = config('app.timezone');
+                $todayOffset = $today->format('P');
 
                 $offerRate = $total > 0 ? round(($offers / $total) * 100) : 0;
                 $interviewRate = $total > 0 ? round(($interviews / $total) * 100) : 0;
             @endphp
 
+            <div class="mb-4 flex flex-wrap gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 shadow-sm">
+                <div class="min-w-0 flex-1">
+                    <p class="text-lg font-bold text-slate-800">
+                        Hi, {{ auth()->user()->name ?? 'there' }}!
+                    </p>
+                    <p class="mt-1 text-md font-medium text-slate-600">
+                        Follow your job opportunities and applications in real time.
+                    </p>
+                </div>
+                {{-- Today's Date and Time Widget | Date and Time Display Component  --}}
+                <!-- Dynamic values: Day, Full Date, Time, Offset, and Timezone -->
+                {{-- <div class="relative flex min-w-[18rem] overflow-hidden rounded-2xl border border-slate-400/70 bg-gradient-to-br from-slate-200 via-slate-50 to-slate-300 px-6 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.85),inset_0_-10px_24px_rgba(100,116,139,0.18),0_8px_20px_rgba(15,23,42,0.08)] md:min-w-[22rem]">
+                    <span class="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.08)_36%,rgba(148,163,184,0.2)_70%,rgba(255,255,255,0.4)_100%)]"></span>
+                    <span class="pointer-events-none absolute -left-10 top-1/2 h-16 w-24 -translate-y-1/2 rounded-full bg-white/55 blur-xl"></span>
+                    <div class="relative z-10 w-full pr-12">
+                        <div>
+                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-600">Today</p>
+                            <p class="text-sm font-black text-slate-900">{{ $today->format('l') }}</p>
+                            <p class="text-xs font-semibold text-slate-700">{{ $today->format('d M Y') }}</p>
+                            <p class="mt-0.5 text-[11px] font-medium text-slate-600">{{ $todayTime }} · {{ $todayOffset }}</p>
+                            <p class="text-[10px] uppercase tracking-wide text-slate-500">{{ $todayTimezone }}</p>
+                        </div>
+
+                        <div class="absolute right-0 top-0 rounded-xl border border-slate-300/70 bg-white/60 p-2">
+                            <svg class="h-5 w-5 text-slate-700" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8" />
+                                <path d="M12 8V12L14.5 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M7 3.5L5.5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                <path d="M17 3.5L18.5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                    </div>
+                </div> --}}
+            </div>
+
             <div class="space-y-4">
                 <section
                     class="rounded-3xl border border-slate-300/80 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-5 shadow-sm">
-                    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                        <div>
+                    <div class="flex items-start gap-3 overflow-x-auto">
+                        <div class="shrink-0">
                             <h3 class="text-sm font-black uppercase tracking-[0.18em] text-slate-700">Daily reminders</h3>
                             <p class="mt-1 text-xs text-slate-500">Stay on track with today's interview schedule.</p>
                         </div>
-                        <span
-                            class="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                            {{ $today->format('D, d M') }}
-                        </span>
-                    </div>
 
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-                            <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Interviews today</p>
-                            <p class="mt-2 text-4xl font-black leading-none text-amber-700">{{ $todayInterviews->count() }}
-                            </p>
-                        </div>
-
-                        <div class="col-span-1 md:col-span-2 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Today schedule</p>
-
-                            @if ($todayInterviews->isEmpty())
-                                <p class="mt-2 text-sm text-slate-500">No interviews scheduled for today. Great time to
-                                    apply to new opportunities.</p>
-                            @else
-                                <div class="mt-2 space-y-2">
-                                    @foreach ($todayInterviews->take(3) as $app)
-                                        <div
-                                            class="flex flex-wrap items-start gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                                            <div class="min-w-0 flex-1">
-                                                <p class="truncate text-sm font-semibold text-slate-800">
-                                                    {{ $app->position }} · {{ $app->company }}</p>
-                                                <p class="text-xs text-slate-500">
-                                                    {{ $app->interview_is_remote ? 'Remote' : ($app->interview_location ?: 'Interview') }}
-                                                </p>
-                                            </div>
-                                            <span
-                                                class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700 whitespace-nowrap">
-                                                {{ $app->interview_time ? \Illuminate\Support\Carbon::parse($app->interview_time)->format('H:i') : 'TBA' }}
-                                            </span>
-                                        </div>
-                                    @endforeach
+                        <div class="flex shrink-0 items-stretch gap-2">
+                            <div class="flex w-44 self-stretch items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-3 text-center">
+                                <div>
+                                    <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Interviews today</p>
+                                    <p class="mt-1 text-3xl font-black text-amber-700">{{ $todayInterviews->count() }}</p>
                                 </div>
+                            </div>
 
-                                @if ($todayInterviews->count() > 3)
-                                    <p class="mt-2 text-xs text-slate-500">+{{ $todayInterviews->count() - 3 }} more
-                                        interview(s) today.</p>
+                            <div class="w-[24rem] md:w-[40rem] rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Today schedule</p>
+
+                                @if ($todayInterviews->isEmpty())
+                                    <p class="mt-2 text-sm text-slate-500">No interviews scheduled for today.</p>
+                                @else
+                                    <div class="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
+                                        @foreach ($todayInterviews->take(2) as $app)
+                                            <div
+                                                class="flex h-full items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="text-sm font-semibold leading-tight text-slate-800">
+                                                        {{ $app->position }} · {{ $app->company }}</p>
+                                                    <p class="mt-1 text-xs text-slate-500">
+                                                        {{ $app->interview_is_remote ? 'Remote' : ($app->interview_location ?: 'Interview') }}
+                                                    </p>
+                                                </div>
+                                                <span
+                                                    class="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700 whitespace-nowrap">
+                                                    {{ $app->interview_time ? \Illuminate\Support\Carbon::parse($app->interview_time)->format('H:i') : 'TBA' }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 @endif
-                            @endif
+                            </div>
                         </div>
+                    </div>
                 </section>
 
                 <x-dashboard.dashboard-container>
