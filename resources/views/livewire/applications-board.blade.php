@@ -83,7 +83,7 @@
                         </div>
 
                         <div class="flex shrink-0 items-stretch gap-2">
-                            <div class="flex h-20 w-44 items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-3 text-center">
+                            <div class="flex w-44 self-stretch items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-3 text-center">
                                 <div>
                                     <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Interviews today</p>
                                     <p class="mt-1 text-base font-black text-amber-700">{{ $todayInterviews->count() }}</p>
