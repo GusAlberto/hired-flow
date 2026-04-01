@@ -86,7 +86,7 @@
                             <div class="flex w-44 self-stretch items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-3 text-center">
                                 <div>
                                     <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Interviews today</p>
-                                    <p class="mt-1 text-base font-black text-amber-700">{{ $todayInterviews->count() }}</p>
+                                    <p class="mt-1 text-3xl font-black text-amber-700">{{ $todayInterviews->count() }}</p>
                                 </div>
                             </div>
 
