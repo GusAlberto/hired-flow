@@ -9,21 +9,17 @@ mkdir -p storage/framework/cache storage/framework/sessions storage/framework/vi
 chown -R www-data:www-data storage bootstrap/cache || true
 chmod -R ug+rwx storage bootstrap/cache || true
 
-if [ ! -f .env ] && [ -f .env.example ]; then
-    cp .env.example .env
-fi
-
-if [ -f .env ]; then
-    APP_KEY_VALUE=$(grep '^APP_KEY=' .env | cut -d '=' -f2- || true)
-    if [ -z "$APP_KEY_VALUE" ]; then
-        php artisan key:generate --force || true
-    fi
+# In production, environment variables are passed directly; generate APP_KEY if needed
+if [ -z "$APP_KEY" ] && [ ! -f .env ]; then
+    php artisan key:generate --force --no-interaction || true
 fi
 
 php artisan config:cache || true
+php artisan route:cache || true
 
-if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
-    php artisan migrate --force || true
+# Run migrations in production if flag is set or if APP_ENV is production
+if [ "${RUN_MIGRATIONS:-false}" = "true" ] || [ "$APP_ENV" = "production" ]; then
+    php artisan migrate --force --no-interaction || true
 fi
 
 php-fpm -D
