@@ -43,15 +43,6 @@
 
     @unless ($isBoardPage)
         <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <div class="mb-6 rounded-2xl border border-slate-200 bg-white/80 px-7 py-4 shadow-sm">
-                <p class="text-lg font-bold text-slate-800">
-                    Hi, {{ auth()->user()->name ?? 'there' }}!
-                </p>
-                <p class="mt-1 text-md font-medium text-slate-600">
-                    Follow your job opportunities and applications in real time.
-                </p>
-            </div>
-
             @php
                 $today = now();
                 $todayInterviews = $interview
@@ -63,6 +54,25 @@
                 $interviewRate = $total > 0 ? round(($interviews / $total) * 100) : 0;
             @endphp
 
+            <div class="mb-4 flex flex-wrap items-stretch gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 shadow-sm">
+                <div class="min-w-0 flex-1">
+                    <p class="text-lg font-bold text-slate-800">
+                        Hi, {{ auth()->user()->name ?? 'there' }}!
+                    </p>
+                    <p class="mt-1 text-md font-medium text-slate-600">
+                        Follow your job opportunities and applications in real time.
+                    </p>
+                </div>
+
+                <div class="flex min-w-[16rem] items-center justify-center rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 to-white px-4 py-3 text-center">
+                    <div>
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Today</p>
+                        <p class="mt-1 text-base font-black text-slate-800">{{ $today->format('l') }}</p>
+                        <p class="text-sm font-semibold text-slate-600">{{ $today->format('d M Y') }}</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="space-y-4">
                 <section
                     class="rounded-3xl border border-slate-300/80 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-5 shadow-sm">
@@ -73,13 +83,6 @@
                         </div>
 
                         <div class="flex shrink-0 items-stretch gap-2">
-                            <div class="flex h-20 w-44 items-center justify-center rounded-2xl border border-slate-300 bg-white px-3 text-center">
-                                <div>
-                                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Date</p>
-                                    <p class="mt-1 text-sm font-bold text-slate-700">{{ $today->format('D, d M') }}</p>
-                                </div>
-                            </div>
-
                             <div class="flex h-20 w-44 items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-3 text-center">
                                 <div>
                                     <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Interviews today</p>
