@@ -42,7 +42,7 @@
     @endif
 
     @unless ($isBoardPage)
-        <div class="mb-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             @php
                 $today = now();
                 $todayInterviews = $interview
@@ -54,7 +54,7 @@
                 $interviewRate = $total > 0 ? round(($interviews / $total) * 100) : 0;
             @endphp
 
-            <div class="mb-4 flex flex-wrap items-stretch gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 shadow-sm">
+            <div class="mb-4 flex flex-wrap gap-3 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 shadow-sm">
                 <div class="min-w-0 flex-1">
                     <p class="text-lg font-bold text-slate-800">
                         Hi, {{ auth()->user()->name ?? 'there' }}!
@@ -64,7 +64,7 @@
                     </p>
                 </div>
 
-                <div class="flex min-w-[16rem] items-center justify-center rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 to-white px-4 py-3 text-center">
+                <div class="flex min-w-[18rem] md:min-w-[22rem] items-center justify-center rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 to-white px-6 py-2 text-center">
                     <div>
                         <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Today</p>
                         <p class="mt-1 text-base font-black text-slate-800">{{ $today->format('l') }}</p>
@@ -76,7 +76,7 @@
             <div class="space-y-4">
                 <section
                     class="rounded-3xl border border-slate-300/80 bg-gradient-to-br from-white via-slate-50 to-slate-100 p-5 shadow-sm">
-                    <div class="flex items-start gap-3 overflow-x-auto pb-1">
+                    <div class="flex items-start gap-3 overflow-x-auto">
                         <div class="shrink-0">
                             <h3 class="text-sm font-black uppercase tracking-[0.18em] text-slate-700">Daily reminders</h3>
                             <p class="mt-1 text-xs text-slate-500">Stay on track with today's interview schedule.</p>
