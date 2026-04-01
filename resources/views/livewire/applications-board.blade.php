@@ -64,11 +64,13 @@
                     </p>
                 </div>
 
-                <div class="flex min-w-[18rem] md:min-w-[22rem] items-center justify-center rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 to-white px-6 py-2 text-center">
-                    <div>
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Today</p>
-                        <p class="mt-1 text-base font-black text-slate-800">{{ $today->format('l') }}</p>
-                        <p class="text-sm font-semibold text-slate-600">{{ $today->format('d M Y') }}</p>
+                <div class="relative flex min-w-[18rem] overflow-hidden rounded-2xl border border-slate-400/70 bg-gradient-to-br from-slate-200 via-slate-50 to-slate-300 px-6 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.85),inset_0_-10px_24px_rgba(100,116,139,0.18),0_8px_20px_rgba(15,23,42,0.08)] md:min-w-[22rem]">
+                    <span class="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.08)_36%,rgba(148,163,184,0.2)_70%,rgba(255,255,255,0.4)_100%)]"></span>
+                    <span class="pointer-events-none absolute -left-10 top-1/2 h-16 w-24 -translate-y-1/2 rounded-full bg-white/55 blur-xl"></span>
+                    <div class="relative z-10 w-full">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Today</p>
+                        <p class="mt-1 text-base font-black text-slate-900">{{ $today->format('l') }}</p>
+                        <p class="text-sm font-semibold text-slate-700">{{ $today->format('d M Y') }}</p>
                     </div>
                 </div>
             </div>
