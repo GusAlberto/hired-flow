@@ -90,20 +90,20 @@
                                 </div>
                             </div>
 
-                            <div class="w-72 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                            <div class="w-[24rem] md:w-[40rem] rounded-2xl border border-slate-200 bg-white px-4 py-3">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-600">Today schedule</p>
 
                                 @if ($todayInterviews->isEmpty())
                                     <p class="mt-2 text-sm text-slate-500">No interviews scheduled for today.</p>
                                 @else
-                                    <div class="mt-2 space-y-2">
+                                    <div class="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
                                         @foreach ($todayInterviews->take(2) as $app)
                                             <div
-                                                class="flex items-start gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                                                class="flex h-full items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                                                 <div class="min-w-0 flex-1">
-                                                    <p class="truncate text-sm font-semibold text-slate-800">
+                                                    <p class="text-sm font-semibold leading-tight text-slate-800">
                                                         {{ $app->position }} · {{ $app->company }}</p>
-                                                    <p class="text-xs text-slate-500">
+                                                    <p class="mt-1 text-xs text-slate-500">
                                                         {{ $app->interview_is_remote ? 'Remote' : ($app->interview_location ?: 'Interview') }}
                                                     </p>
                                                 </div>
