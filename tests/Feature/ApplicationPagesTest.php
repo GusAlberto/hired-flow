@@ -23,6 +23,12 @@ class ApplicationPagesTest extends TestCase
             ->assertRedirect('/login');
     }
 
+    public function test_board_requires_authentication(): void
+    {
+        $this->get('/board')
+            ->assertRedirect('/login');
+    }
+
     public function test_dashboard_requires_verified_email(): void
     {
         config()->set('auth.require_verified_email', true);
@@ -68,25 +74,51 @@ class ApplicationPagesTest extends TestCase
             ->get('/dashboard')
             ->assertOk()
             ->assertSeeText($visibleApplication->company)
-            ->assertDontSeeText('Hidden Company');
+            ->assertDontSeeText('Hidden Company')
+            ->assertDontSeeText('Switch to vertical view');
     }
 
-    public function test_dashboard_escapes_stored_content(): void
+    public function test_verified_user_can_access_board_page_with_kanban_content(): void
     {
         $user = User::factory()->create();
 
         Application::factory()->for($user)->create([
-            'company' => '<script>alert("xss")</script>',
-            'position' => 'Security Engineer',
+            'company' => 'Board Company',
+            'position' => 'Product Engineer',
             'status' => 'applied',
             'stage' => 'applied',
         ]);
 
         $this->actingAs($user)
-            ->get('/dashboard')
+            ->get('/board')
             ->assertOk()
-            ->assertDontSee('<script>alert("xss")</script>', false)
-            ->assertSee('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;', false);
+            ->assertSeeText('Switch to vertical view')
+            ->assertSeeText('Board Company');
+    }
+
+    public function test_dashboard_escapes_stored_content(): void
+    {
+        $user = User::factory()->create();
+        $payload = '<script>alert("xss")</script>';
+
+        Application::factory()->for($user)->create([
+            'company' => $payload,
+            'position' => 'Security Engineer',
+            'status' => 'applied',
+            'stage' => 'applied',
+        ]);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response
+            ->assertOk()
+            ->assertDontSee($payload, false);
+
+        // Accept safe output in either HTML context or JSON-escaped context.
+        $this->assertMatchesRegularExpression(
+            '/(?:&lt;script&gt;alert\(&quot;xss&quot;\)&lt;\/script&gt;|\\\\u003Cscript\\\\u003Ealert\(\\\\u0022xss\\\\u0022\)\\\\u003C\\\\\/script\\\\u003E)/',
+            $response->getContent()
+        );
     }
 
     public function test_settings_page_is_available_only_to_authenticated_users(): void
@@ -100,5 +132,52 @@ class ApplicationPagesTest extends TestCase
             ->get('/settings')
             ->assertOk()
             ->assertSeeText('Archiving Rules');
+    }
+
+    public function test_create_application_page_requires_authentication(): void
+    {
+        $this->get('/applications/create')
+            ->assertRedirect('/login');
+    }
+
+    public function test_authenticated_user_can_open_create_application_page(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('applications.create'))
+            ->assertOk()
+            ->assertSeeText('Create application')
+            ->assertSeeText('New application');
+    }
+
+    public function test_authenticated_user_can_store_new_application_from_create_page(): void
+    {
+        $user = User::factory()->create();
+
+        $payload = [
+            'company' => 'Stripe',
+            'position' => 'Backend Engineer',
+            'city' => 'Sao Paulo',
+            'location' => 'Remote',
+            'applied_at' => '2026-03-27',
+            'job_url' => 'https://example.com/jobs/stripe-backend',
+            'personal_score' => 8.5,
+            'salary_offered' => 14000,
+            'salary_expected' => 16000,
+        ];
+
+        $this->actingAs($user)
+            ->post(route('applications.store'), $payload)
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertDatabaseHas('applications', [
+            'user_id' => $user->id,
+            'company' => 'Stripe',
+            'position' => 'Backend Engineer',
+            'status' => 'applied',
+            'stage' => 'applied',
+            'location' => 'Remote',
+        ]);
     }
 }
