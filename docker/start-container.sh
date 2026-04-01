@@ -9,6 +9,9 @@ mkdir -p storage/framework/cache storage/framework/sessions storage/framework/vi
 chown -R www-data:www-data storage bootstrap/cache || true
 chmod -R ug+rwx storage bootstrap/cache || true
 
+# Ensure Vite does not try to use a local dev server URL in production
+rm -f public/hot
+
 # In production, environment variables are passed directly; generate APP_KEY if needed
 if [ -z "$APP_KEY" ] && [ ! -f .env ]; then
     php artisan key:generate --force --no-interaction || true
