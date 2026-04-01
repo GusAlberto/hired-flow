@@ -22,7 +22,10 @@ php artisan route:cache || true
 
 # Run migrations only when explicitly enabled
 if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
-    php artisan migrate --force --no-interaction || true
+    echo "RUN_MIGRATIONS=true, running migrations..."
+    php artisan migrate --force --no-interaction
+else
+    echo "RUN_MIGRATIONS is not true, skipping migrations."
 fi
 
 php-fpm -D
