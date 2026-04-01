@@ -113,12 +113,15 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
-        'turso' => [
-            'driver' => 'turso',
-            'url' => env('DATABASE_URL'),
-            'auth_token' => env('DATABASE_AUTH_TOKEN'),
+        'libsql' => [
+            'driver' => 'libsql',
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
-            'prefix_indexes' => true,
+            'url' => env('DB_SYNC_URL', ''),
+            'authToken' => env('DB_AUTH_TOKEN', ''),
+            'syncInterval' => env('DB_SYNC_INTERVAL', 5),
+            'read_your_writes' => env('DB_READ_YOUR_WRITES', true),
+            'encryptionKey' => env('DB_ENCRYPTION_KEY', ''),
         ],
 
     ],

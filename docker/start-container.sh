@@ -20,8 +20,8 @@ fi
 php artisan config:cache || true
 php artisan route:cache || true
 
-# Run migrations in production if flag is set or if APP_ENV is production
-if [ "${RUN_MIGRATIONS:-false}" = "true" ] || [ "$APP_ENV" = "production" ]; then
+# Run migrations only when explicitly enabled
+if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
     php artisan migrate --force --no-interaction || true
 fi
 
