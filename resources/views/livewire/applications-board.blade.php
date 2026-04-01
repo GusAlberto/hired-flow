@@ -66,8 +66,9 @@
                         Follow your job opportunities and applications in real time.
                     </p>
                 </div>
-
-                <div class="relative flex min-w-[18rem] overflow-hidden rounded-2xl border border-slate-400/70 bg-gradient-to-br from-slate-200 via-slate-50 to-slate-300 px-6 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.85),inset_0_-10px_24px_rgba(100,116,139,0.18),0_8px_20px_rgba(15,23,42,0.08)] md:min-w-[22rem]">
+                {{-- Today's Date and Time Widget | Date and Time Display Component  --}}
+                <!-- Dynamic values: Day, Full Date, Time, Offset, and Timezone -->
+                {{-- <div class="relative flex min-w-[18rem] overflow-hidden rounded-2xl border border-slate-400/70 bg-gradient-to-br from-slate-200 via-slate-50 to-slate-300 px-6 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.85),inset_0_-10px_24px_rgba(100,116,139,0.18),0_8px_20px_rgba(15,23,42,0.08)] md:min-w-[22rem]">
                     <span class="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.08)_36%,rgba(148,163,184,0.2)_70%,rgba(255,255,255,0.4)_100%)]"></span>
                     <span class="pointer-events-none absolute -left-10 top-1/2 h-16 w-24 -translate-y-1/2 rounded-full bg-white/55 blur-xl"></span>
                     <div class="relative z-10 w-full pr-12">
@@ -88,7 +89,7 @@
                             </svg>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
 
             <div class="space-y-4">
