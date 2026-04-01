@@ -49,6 +49,9 @@
                     ->filter(fn($app) => $app->interview_date && $app->interview_date->isSameDay($today))
                     ->sortBy('interview_time')
                     ->values();
+                $todayTime = $today->format('H:i');
+                $todayTimezone = config('app.timezone');
+                $todayOffset = $today->format('P');
 
                 $offerRate = $total > 0 ? round(($offers / $total) * 100) : 0;
                 $interviewRate = $total > 0 ? round(($interviews / $total) * 100) : 0;
@@ -67,10 +70,23 @@
                 <div class="relative flex min-w-[18rem] overflow-hidden rounded-2xl border border-slate-400/70 bg-gradient-to-br from-slate-200 via-slate-50 to-slate-300 px-6 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.85),inset_0_-10px_24px_rgba(100,116,139,0.18),0_8px_20px_rgba(15,23,42,0.08)] md:min-w-[22rem]">
                     <span class="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.55)_0%,rgba(255,255,255,0.08)_36%,rgba(148,163,184,0.2)_70%,rgba(255,255,255,0.4)_100%)]"></span>
                     <span class="pointer-events-none absolute -left-10 top-1/2 h-16 w-24 -translate-y-1/2 rounded-full bg-white/55 blur-xl"></span>
-                    <div class="relative z-10 w-full">
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Today</p>
-                        <p class="mt-1 text-base font-black text-slate-900">{{ $today->format('l') }}</p>
-                        <p class="text-sm font-semibold text-slate-700">{{ $today->format('d M Y') }}</p>
+                    <div class="relative z-10 w-full pr-12">
+                        <div>
+                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-600">Today</p>
+                            <p class="text-sm font-black text-slate-900">{{ $today->format('l') }}</p>
+                            <p class="text-xs font-semibold text-slate-700">{{ $today->format('d M Y') }}</p>
+                            <p class="mt-0.5 text-[11px] font-medium text-slate-600">{{ $todayTime }} · {{ $todayOffset }}</p>
+                            <p class="text-[10px] uppercase tracking-wide text-slate-500">{{ $todayTimezone }}</p>
+                        </div>
+
+                        <div class="absolute right-0 top-0 rounded-xl border border-slate-300/70 bg-white/60 p-2">
+                            <svg class="h-5 w-5 text-slate-700" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8" />
+                                <path d="M12 8V12L14.5 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M7 3.5L5.5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                <path d="M17 3.5L18.5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                            </svg>
+                        </div>
                     </div>
                 </div>
             </div>
