@@ -21,6 +21,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && docker-php-ext-install -j"$(nproc)" bcmath exif gd mbstring pdo pdo_mysql pdo_sqlite zip \
     && rm -rf /var/lib/apt/lists/*
 
+# Install libSQL PHP extension for Turso
+RUN curl -L https://github.com/tursodatabase/libsql-client-php/releases/download/v0.6.0/libsql_0.6.0_php83_x86_64-linux-gnu.so -o /usr/local/lib/php/extensions/no-debug-non-zts-20230835/libsql.so \
+    && chmod +x /usr/local/lib/php/extensions/no-debug-non-zts-20230835/libsql.so \
+    && echo "extension=libsql.so" > /usr/local/etc/php/conf.d/libsql.ini
+
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get update && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
