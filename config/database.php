@@ -115,8 +115,8 @@ return [
 
         'libsql' => [
             'driver' => 'libsql',
-            // Keep null by default so production remote mode does not fallback to a local SQLite file.
-            'database' => env('DB_DATABASE'),
+            // Always keep null in production remote mode to avoid local SQLite fallback.
+            'database' => null,
             'prefix' => '',
             'url' => env('DB_SYNC_URL', env('DATABASE_URL', '')),
             'authToken' => env('DATABASE_AUTH_TOKEN', env('DB_AUTH_TOKEN', '')),
